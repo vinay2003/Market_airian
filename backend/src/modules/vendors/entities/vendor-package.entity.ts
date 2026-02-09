@@ -19,7 +19,16 @@ export class VendorPackage {
     features: string[]; // List of inclusions
 
     @Column({ type: 'simple-array', nullable: true })
-    images: string[]; // List of image URLs
+    images: string[];
+
+    @Column({ nullable: true })
+    category: string; // e.g. "Photography", "Catering"
+
+    @Column({ nullable: true })
+    tier: string; // "Basic", "Standard", "Premium"
+
+    @Column({ default: true })
+    active: boolean;
 
     @ManyToOne(() => VendorProfile, (vendor) => vendor.packages, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'vendorId' })

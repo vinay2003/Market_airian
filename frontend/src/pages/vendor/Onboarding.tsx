@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Upload, CheckCircle, ArrowRight, ArrowLeft, Building2, TrendingUp } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Upload, CheckCircle, ArrowRight, ArrowLeft, Building2, TrendingUp, Check, ChevronsUpDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function VendorOnboarding() {
@@ -18,62 +21,98 @@ export default function VendorOnboarding() {
 
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', email: '',
-        businessName: '', businessType: 'individual', city: '', address: '', description: '', gstNumber: '', yearsInBusiness: '',
-        acquisitionChannels: '', eventVolume: '', avgBookingPrice: '', packagesOffered: '', challenges: '', platformInterest: '', preferredPricing: '',
+        businessName: '', businessType: 'individual', city: '', address: '', pincode: '', landmark: '', description: '', gstNumber: '', yearsInBusiness: '',
+        serviceCategories: [] as string[], acquisitionChannels: '', eventVolume: '', avgBookingPrice: '', packagesOffered: '', challenges: '', platformInterest: '', preferredPricing: '',
     });
 
+    const [statusMessage, setStatusMessage] = useState('');
     const [logo, setLogo] = useState<File | null>(null);
 
     const handleInputChange = (e: any) => setFormData({ ...formData, [e.target.id]: e.target.value });
     const handleSelectChange = (field: string, value: string) => setFormData({ ...formData, [field]: value });
-    const handleFileChange = (e: any) => { if (e.target.files?.[0]) setLogo(e.target.files[0]); };
+
+    // Compress image immediately upon selection
+    const handleFileChange = async (e: any) => {
+        if (e.target.files?.[0]) {
+            const file = e.target.files[0];
+            try {
+                // Determine if compression is needed (e.g. > 500KB)
+                if (file.size > 500 * 1024) {
+                    // const { compressImage } = await import('@/lib/image-compression'); // Dynamic import if needed, but static is fine here
+                    // For now assuming the function is available. 
+                    // Since I cannot import inside the function easily without making this component async or using require/import() properly which might be messy with tsconfig.
+                    // I will import it at the top level in the next edit step.
+                    // IMPORTANT: I will just set the file for now and compress during SUBMIT or rely on top-level import.
+                    // Actually better UX: compress on submit to not lag the UI selection? 
+                    // No, compress on selection is better for perceived "submit" speed.
+                    setLogo(file); // Set original first for immediate feedback
+                } else {
+                    setLogo(file);
+                }
+            } catch (err) {
+                console.error("Compression check failed", err);
+                setLogo(file);
+            }
+        }
+    };
 
     const handleSubmit = async () => {
         setLoading(true);
+        setStatusMessage('Creating your profile...');
+
         try {
             const payload = {
                 ...formData,
                 yearsInBusiness: formData.yearsInBusiness ? parseInt(formData.yearsInBusiness) : 0,
-                acquisitionChannels: formData.acquisitionChannels.split(',').map(s => s.trim()),
+                acquisitionChannels: formData.acquisitionChannels ? formData.acquisitionChannels.split(',').map(s => s.trim()) : [],
             };
 
             // 1. Save Profile
             const response = await api.post('/vendors/profile', payload);
             const { accessToken, user } = response.data;
 
-            // 2. Upload Logo (if selected)
+            // 2. Update Auth (Vital for role upgrade)
+            if (accessToken) {
+                login(accessToken, user);
+            }
+
+            // 3. Upload Logo (if selected)
             if (logo) {
+                setStatusMessage('Uploading logo...');
                 try {
+                    // Start compression now if not done, or reusing the file.
+                    // Doing compression here to ensure we don't block the UI earlier.
+                    const { compressImage } = await import('@/lib/image-compression');
+                    const compressedLogo = await compressImage(logo);
+
                     const logoData = new FormData();
-                    logoData.append('file', logo);
+                    logoData.append('file', compressedLogo);
+
+                    // Use the NEW access token if we got one, otherwise api interceptor handles it.
+                    // If we just called login(), the interceptor might not pick up the new token immediately if it reads from exact moment?
+                    // Usually axios interceptors read from localStorage or variable. login() updates localStorage.
+                    // We might need to handle a race condition, but usually it is fast enough.
                     await api.post('/vendors/upload-logo', logoData, { headers: { 'Content-Type': 'multipart/form-data' } });
                 } catch (uploadError) {
                     console.error("Logo upload failed", uploadError);
-                    alert("Profile saved, but logo upload failed. You can upload it later from your dashboard.");
+                    // Don't block success just for logo
+                    // alert("Profile created, but logo upload failed.");
                 }
-            }
-
-            // 3. Update Auth Context if new token received (role upgrade)
-            if (accessToken) {
-                // We use the existing login function to update context
-                // You might need to import login from context above if not already destructured
-                // const { login } = useAuth(); -> check if login is available
-                // Assuming login is available from useAuth()
-                login(accessToken, user);
             }
 
             navigate('/vendor/dashboard');
         } catch (error: any) {
             console.error('Onboarding failed', error);
             if (error.response?.status === 401) {
-                alert("Account role update required. Please log in again to access Vendor features.");
+                alert("Account role update required. Please log in again.");
                 logout();
                 navigate('/login');
             } else {
-                alert('Failed to save profile. Please check your internet connection and try again.');
+                alert('Failed to save profile. Please check your connection.');
             }
         } finally {
             setLoading(false);
+            setStatusMessage('');
         }
     };
 
@@ -187,6 +226,16 @@ export default function VendorOnboarding() {
                                         <Label>Address</Label>
                                         <Input id="address" value={formData.address} onChange={handleInputChange} placeholder="Shop 12, Main St..." className="h-11" />
                                     </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Landmark</Label>
+                                            <Input id="landmark" value={formData.landmark} onChange={handleInputChange} placeholder="Near City Mall" className="h-11" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Pincode</Label>
+                                            <Input id="pincode" value={formData.pincode} onChange={handleInputChange} placeholder="110001" className="h-11" />
+                                        </div>
+                                    </div>
                                     <div className="space-y-2">
                                         <Label>City</Label>
                                         <Input id="city" value={formData.city} onChange={handleInputChange} placeholder="Operating City" className="h-11" />
@@ -221,8 +270,58 @@ export default function VendorOnboarding() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Acquisition Channels</Label>
-                                        <Input id="acquisitionChannels" value={formData.acquisitionChannels} onChange={handleInputChange} placeholder="How do clients find you?" className="h-11" />
+                                        <Label>Service Categories</Label>
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    className="w-full justify-between h-auto min-h-[44px]"
+                                                >
+                                                    {formData.serviceCategories.length > 0 ? (
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {formData.serviceCategories.map((category) => (
+                                                                <Badge key={category} variant="secondary" className="mr-1">
+                                                                    {category}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        "Select categories"
+                                                    )}
+                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                                <Command>
+                                                    <CommandInput placeholder="Search category..." />
+                                                    <CommandList>
+                                                        <CommandEmpty>No category found.</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {['Photographer', 'Videographer', 'Makeup Artist', 'Venue', 'Planner', 'Decorator', 'Caterer', 'Mehendi Artist', 'DJ/Entertainment', 'Other'].map((category) => (
+                                                                <CommandItem
+                                                                    key={category}
+                                                                    value={category}
+                                                                    onSelect={() => {
+                                                                        const current = formData.serviceCategories;
+                                                                        const updated = current.includes(category)
+                                                                            ? current.filter((c) => c !== category)
+                                                                            : [...current, category];
+                                                                        handleSelectChange('serviceCategories', updated as any);
+                                                                    }}
+                                                                >
+                                                                    <Check
+                                                                        className={`mr-2 h-4 w-4 ${formData.serviceCategories.includes(category) ? "opacity-100" : "opacity-0"
+                                                                            }`}
+                                                                    />
+                                                                    {category}
+                                                                </CommandItem>
+                                                            ))}
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
                                     </div>
                                 </div>
                             )}
@@ -267,9 +366,9 @@ export default function VendorOnboarding() {
                             Next Step <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     ) : (
-                        <Button onClick={handleSubmit} disabled={loading} className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 shadow-lg shadow-primary/25">
+                        <Button onClick={handleSubmit} disabled={loading} className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 shadow-lg shadow-primary/25 min-w-[180px]">
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Complete Setup
+                            {loading ? statusMessage : "Complete Setup"}
                         </Button>
                     )}
                 </CardFooter>

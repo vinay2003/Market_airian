@@ -40,11 +40,20 @@ export class VendorProfile {
     @Column({ nullable: true })
     address: string;
 
+    @Column({ nullable: true })
+    pincode: string;
+
+    @Column({ nullable: true })
+    landmark: string;
+
     @Column({ type: 'int', nullable: true })
     yearsInBusiness: number;
 
     @Column({ type: 'simple-array', nullable: true })
     acquisitionChannels: string[];
+
+    @Column({ type: 'simple-array', nullable: true })
+    serviceCategories: string[];
 
     @Column({ nullable: true })
     eventVolume: string; // e.g., '1-5', '6-20', '20+'
@@ -69,6 +78,15 @@ export class VendorProfile {
 
     @Column({ nullable: true })
     bannerUrl: string;
+
+    @Column({ type: 'text', nullable: true })
+    termsAndConditions: string;
+
+    @Column({ type: 'simple-json', nullable: true })
+    locations: { address: string; city: string; pincode?: string; landmark?: string; mapUrl?: string }[];
+
+    @Column({ type: 'simple-json', nullable: true })
+    socialLinks: { instagram?: string; website?: string; facebook?: string };
 
     @CreateDateColumn()
     createdAt: Date;

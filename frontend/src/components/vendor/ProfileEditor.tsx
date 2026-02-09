@@ -1,0 +1,340 @@
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Trash2, MapPin, Globe, Instagram, Facebook, Save, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface Location {
+    address: string;
+    city: string;
+    pincode?: string;
+    landmark?: string;
+    mapUrl?: string;
+}
+
+interface SocialLinks {
+    instagram?: string;
+    website?: string;
+    facebook?: string;
+}
+
+export default function VendorProfileEditor() {
+    const { toast } = useToast();
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+
+    // Form State
+    const [formData, setFormData] = useState({
+        businessName: '',
+        businessType: 'individual',
+        description: '',
+        termsAndConditions: '',
+        gstNumber: '',
+        yearsInBusiness: '',
+        locations: [] as Location[],
+        socialLinks: { instagram: '', website: '', facebook: '' } as SocialLinks
+    });
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        try {
+            const res = await api.get('/vendors/profile');
+            const data = res.data;
+            setFormData({
+                businessName: data.businessName || '',
+                businessType: data.businessType || 'individual',
+                description: data.description || '',
+                termsAndConditions: data.termsAndConditions || '',
+                gstNumber: data.gstNumber || '',
+                yearsInBusiness: data.yearsInBusiness?.toString() || '',
+                locations: data.locations || [],
+                socialLinks: data.socialLinks || { instagram: '', website: '', facebook: '' }
+            });
+        } catch (error) {
+            console.error("Failed to load profile", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await api.post('/vendors/profile', {
+                ...formData,
+                yearsInBusiness: parseInt(formData.yearsInBusiness) || 0
+            });
+            toast({ title: "Success", description: "Profile updated successfully." });
+        } catch (error) {
+            console.error("Failed to save", error);
+            toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // Location Handlers
+    const addLocation = () => {
+        setFormData(prev => ({
+            ...prev,
+            locations: [...prev.locations, { address: '', city: '' }]
+        }));
+    };
+
+    const updateLocation = (index: number, field: keyof Location, value: string) => {
+        const newLocations = [...formData.locations];
+        newLocations[index] = { ...newLocations[index], [field]: value };
+        setFormData(prev => ({ ...prev, locations: newLocations }));
+    };
+
+    const removeLocation = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            locations: prev.locations.filter((_, i) => i !== index)
+        }));
+    };
+
+    if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin" /></div>;
+
+    return (
+        <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Profile Settings</h2>
+                    <p className="text-gray-500">Manage your business details and public presence.</p>
+                </div>
+                <Button onClick={handleSave} disabled={saving}>
+                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Save className="mr-2 h-4 w-4" /> Save Changes
+                </Button>
+            </div>
+
+            <Tabs defaultValue="business" className="space-y-6">
+                <TabsList>
+                    <TabsTrigger value="business">Business Details</TabsTrigger>
+                    <TabsTrigger value="locations">Locations & Contact</TabsTrigger>
+                    <TabsTrigger value="legal">Terms & Legal</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="business" className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Basic Information</CardTitle>
+                            <CardDescription>This information is displayed on your public profile.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Business Name</Label>
+                                    <Input
+                                        value={formData.businessName}
+                                        onChange={e => setFormData({ ...formData, businessName: e.target.value })}
+                                        placeholder="e.g. Royal Weddings"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Business Type</Label>
+                                    <Select
+                                        value={formData.businessType}
+                                        onValueChange={v => setFormData({ ...formData, businessType: v })}
+                                    >
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="individual">Freelancer</SelectItem>
+                                            <SelectItem value="company">Company</SelectItem>
+                                            <SelectItem value="agency">Agency</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>About your Business</Label>
+                                <Textarea
+                                    className="h-32"
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                    placeholder="Tell clients what makes your service special..."
+                                />
+                            </div>
+
+                            <div className="grid md:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Years in Business</Label>
+                                    <Input
+                                        type="number"
+                                        value={formData.yearsInBusiness}
+                                        onChange={e => setFormData({ ...formData, yearsInBusiness: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Social Presence</CardTitle>
+                            <CardDescription>Link your social media profiles to build trust.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2"><Instagram className="h-4 w-4" /> Instagram URL</Label>
+                                <Input
+                                    placeholder="https://instagram.com/..."
+                                    value={formData.socialLinks.instagram}
+                                    onChange={e => setFormData({
+                                        ...formData,
+                                        socialLinks: { ...formData.socialLinks, instagram: e.target.value }
+                                    })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Website URL</Label>
+                                <Input
+                                    placeholder="https://yourwebsite.com"
+                                    value={formData.socialLinks.website}
+                                    onChange={e => setFormData({
+                                        ...formData,
+                                        socialLinks: { ...formData.socialLinks, website: e.target.value }
+                                    })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2"><Facebook className="h-4 w-4" /> Facebook URL</Label>
+                                <Input
+                                    placeholder="https://facebook.com/..."
+                                    value={formData.socialLinks.facebook}
+                                    onChange={e => setFormData({
+                                        ...formData,
+                                        socialLinks: { ...formData.socialLinks, facebook: e.target.value }
+                                    })}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="locations" className="space-y-6">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>Service Locations</CardTitle>
+                                <CardDescription>Add all locations where you have a physical presence or office.</CardDescription>
+                            </div>
+                            <Button size="sm" variant="outline" onClick={addLocation}>
+                                <Plus className="mr-2 h-4 w-4" /> Add Location
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {formData.locations.length === 0 && (
+                                <div className="text-center py-8 text-gray-500 border-2 border-dashed rounded-lg">
+                                    <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                    No locations added yet. Add your primary office address.
+                                </div>
+                            )}
+
+                            {formData.locations.map((loc, index) => (
+                                <div key={index} className="grid md:grid-cols-12 gap-4 items-start p-4 border rounded-lg bg-gray-50/50">
+                                    <div className="md:col-span-1 flex justify-center pt-3">
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                                            {index + 1}
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-10 grid gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Full Address</Label>
+                                            <Input
+                                                value={loc.address}
+                                                onChange={e => updateLocation(index, 'address', e.target.value)}
+                                                placeholder="Shop No, Building, Street..."
+                                            />
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>City</Label>
+                                                <Input
+                                                    value={loc.city}
+                                                    onChange={e => updateLocation(index, 'city', e.target.value)}
+                                                    placeholder="Delhi"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Pincode</Label>
+                                                <Input
+                                                    value={loc.pincode || ''}
+                                                    onChange={e => updateLocation(index, 'pincode', e.target.value)}
+                                                    placeholder="110001"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Landmark</Label>
+                                                <Input
+                                                    value={loc.landmark || ''}
+                                                    onChange={e => updateLocation(index, 'landmark', e.target.value)}
+                                                    placeholder="Near Metro Station"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Google Maps URL (Optional)</Label>
+                                                <Input
+                                                    value={loc.mapUrl}
+                                                    onChange={e => updateLocation(index, 'mapUrl', e.target.value)}
+                                                    placeholder="https://maps.google.com/..."
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="md:col-span-1 flex justify-end pt-1">
+                                        <Button variant="ghost" size="icon" className="text-red-500 hover:bg-red-50" onClick={() => removeLocation(index)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="legal" className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Terms & Conditions</CardTitle>
+                            <CardDescription>Define your booking terms, cancellation policies, and payment rules for clients.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Terms & Policy Text</Label>
+                                <Textarea
+                                    className="min-h-[300px] font-mono text-sm"
+                                    value={formData.termsAndConditions}
+                                    onChange={e => setFormData({ ...formData, termsAndConditions: e.target.value })}
+                                    placeholder={`1. Booking Confirmation...\n2. Cancellation Policy...\n3. Payment Terms...`}
+                                />
+                                <p className="text-xs text-gray-500">This text will be shown to clients before they book your service.</p>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>GST Number</Label>
+                                <Input
+                                    value={formData.gstNumber}
+                                    onChange={e => setFormData({ ...formData, gstNumber: e.target.value })}
+                                    placeholder="GSTIN..."
+                                    className="max-w-xs"
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+        </div>
+    );
+}

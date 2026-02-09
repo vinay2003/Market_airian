@@ -11,6 +11,7 @@ import { UsersService } from '../users/users.service';
 import { Public } from '../../common/public.decorator';
 
 import { AuthService } from '../auth/auth.service';
+import { CreateVendorProfileDto } from './dto/create-vendor-profile.dto';
 
 @Controller('vendors')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -24,22 +25,24 @@ export class VendorsController {
 
     @Post('profile')
     @Roles(UserRole.VENDOR, UserRole.USER)
-    async createOrUpdateProfile(@Request() req: any, @Body() body: any) {
+    async createOrUpdateProfile(@Request() req: any, @Body() body: CreateVendorProfileDto) {
+        const { firstName, lastName, email, ...vendorData } = body;
+
         // Update User details if provided
-        if (body.firstName || body.lastName || body.email) {
+        if (firstName || lastName || email) {
             await this.usersService.update(req.user.id, {
-                firstName: body.firstName,
-                lastName: body.lastName,
-                email: body.email
+                firstName,
+                lastName,
+                email
             });
         }
 
         const existing = await this.vendorsService.getProfile(req.user);
         let profile;
         if (existing) {
-            profile = await this.vendorsService.updateProfile(req.user, body);
+            profile = await this.vendorsService.updateProfile(req.user, vendorData);
         } else {
-            profile = await this.vendorsService.createProfile(req.user, body);
+            profile = await this.vendorsService.createProfile(req.user, vendorData);
         }
 
         const currentUser = await this.usersService.findOne(req.user.id);
