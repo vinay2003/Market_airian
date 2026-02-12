@@ -36,12 +36,11 @@ export class AuthService {
             user = this.userRepository.create({ phone, role, isVerified: true });
             await this.userRepository.save(user);
         } else if (user.role !== role) {
-            // Update role if user is logging in with a different role context (e.g. User upgrading to Vendor)
-            // Note: In a real app we might want multi-role support or a specific upgrade flow.
-            // For this MVP, we switch the role.
+            // Update role if user is logging in with a different role context
             user.role = role;
             await this.userRepository.save(user);
         }
+        // No else block: if user exists and role matches, we skip the save(), reducing latency.
 
         const payload = { sub: user.id, phone: user.phone, role: user.role };
         const accessToken = this.jwtService.sign(payload);

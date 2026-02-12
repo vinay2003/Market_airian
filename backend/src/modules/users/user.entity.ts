@@ -39,6 +39,17 @@ export class User {
     @Column({ default: false })
     isVerified: boolean;
 
+    @Column({ nullable: true, select: false }) // Select false to not return by default
+    password: string;
+
+    @Column({ type: 'simple-json', nullable: true })
+    notificationPreferences: {
+        email: boolean;
+        sms: boolean;
+        bookingUpdates: boolean;
+        marketing: boolean;
+    };
+
     @CreateDateColumn()
     createdAt: Date;
 

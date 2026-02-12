@@ -46,6 +46,18 @@ export class VendorProfile {
     @Column({ nullable: true })
     landmark: string;
 
+    @Column({ nullable: true })
+    country: string;
+
+    @Column({ nullable: true })
+    state: string;
+
+    @Column({ nullable: true })
+    locality: string;
+
+    @Column({ nullable: true })
+    plotNo: string;
+
     @Column({ type: 'int', nullable: true })
     yearsInBusiness: number;
 

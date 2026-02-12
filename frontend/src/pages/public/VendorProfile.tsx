@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, CheckCircle, Mail, Phone, Calendar, Star, ShieldCheck, Image as ImageIcon, Box } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { BookingRequestDialog } from '@/components/shared/BookingRequestDialog';
 
 export default function VendorPublicProfile() {
     const { id } = useParams<{ id: string }>();
@@ -242,9 +243,7 @@ export default function VendorPublicProfile() {
                                     )}
                                 </div>
 
-                                <Button className="w-full bg-black text-white hover:bg-gray-800 h-12 text-lg shadow-lg shadow-primary/20">
-                                    Request Quote
-                                </Button>
+                                <BookingRequestDialog vendorName={vendor.businessName} packs={vendor.packages} />
                                 <p className="text-xs text-center text-gray-400">Response time: Usually within 24h</p>
                             </CardContent>
                         </Card>

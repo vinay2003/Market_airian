@@ -158,6 +158,17 @@ export class VendorsController {
         return this.vendorsService.updateProfile(req.user, { logoUrl: url });
     }
 
+    @Post('upload-banner')
+    @Roles(UserRole.VENDOR)
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadBanner(@UploadedFile() file: Express.Multer.File, @Request() req: any) {
+        if (!file) {
+            throw new BadRequestException('File is required');
+        }
+        const url = await this.supabaseService.uploadFile(file, 'vendor-assets', `banners/${req.user.id}-${Date.now()}`);
+        return this.vendorsService.updateProfile(req.user, { bannerUrl: url });
+    }
+
     @Post('gallery')
     @Roles(UserRole.VENDOR)
     @UseInterceptors(FileInterceptor('file'))

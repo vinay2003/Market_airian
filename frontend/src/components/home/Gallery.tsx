@@ -2,11 +2,11 @@ import { motion } from 'framer-motion';
 import { Camera } from 'lucide-react';
 
 const images = [
-    { src: "https://images.unsplash.com/photo-1511285560982-1351cdeb9821?q=80&w=1974&auto=format&fit=crop", span: "md:col-span-2 md:row-span-2" },
-    { src: "https://images.unsplash.com/photo-1519225421980-715cb0202128?q=80&w=2000&auto=format&fit=crop", span: "md:col-span-1 md:row-span-1" },
-    { src: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop", span: "md:col-span-1 md:row-span-1" },
-    { src: "https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?q=80&w=2070&auto=format&fit=crop", span: "md:col-span-1 md:row-span-1" },
-    { src: "https://images.unsplash.com/photo-1530103862676-de3c9fa59af7?q=80&w=2070&auto=format&fit=crop", span: "md:col-span-1 md:row-span-1" },
+    { src: "/images/WhatsApp Image 2026-02-10 at 22.00.18.jpeg", span: "md:col-span-2 md:row-span-2" },
+    { src: "/images/WhatsApp Image 2026-02-10 at 22.00.19.jpeg", span: "md:col-span-1 md:row-span-1" },
+    { src: "/images/WhatsApp Image 2026-02-10 at 22.00.20.jpeg", span: "md:col-span-1 md:row-span-1" },
+    { src: "/images/WhatsApp Image 2026-02-10 at 22.00.21.jpeg", span: "md:col-span-1 md:row-span-1" },
+    { src: "/images/WhatsApp Image 2026-02-10 at 22.00.23.jpeg", span: "md:col-span-1 md:row-span-1" },
 ];
 
 export default function Gallery() {
@@ -21,7 +21,7 @@ export default function Gallery() {
                     <p className="text-gray-500 max-w-xl mx-auto">Real weddings, real parties, real memories created by our vendors.</p>
                 </div>
 
-                <div className="grid md:grid-cols-4 md:grid-rows-2 gap-4 h-[600px] md:h-[800px]">
+                <div className="grid grid-cols-2 md:grid-cols-4 grid-rows-4 md:grid-rows-2 gap-3 h-[500px] md:h-[600px]">
                     {images.map((img, i) => (
                         <motion.div
                             key={i}
@@ -29,12 +29,12 @@ export default function Gallery() {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.1 }}
-                            className={`relative rounded-3xl overflow-hidden group ${img.span}`}
+                            className={`relative rounded-2xl overflow-hidden group ${i === 0 ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1'}`}
                         >
                             <img
                                 src={img.src}
                                 alt="Gallery"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
                             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </motion.div>

@@ -112,6 +112,22 @@ export class CreateVendorProfileDto {
     termsAndConditions?: string;
 
     @IsOptional()
+    @IsString()
+    country?: string;
+
+    @IsOptional()
+    @IsString()
+    state?: string;
+
+    @IsOptional()
+    @IsString()
+    locality?: string;
+
+    @IsOptional()
+    @IsString()
+    plotNo?: string;
+
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => LocationDto)

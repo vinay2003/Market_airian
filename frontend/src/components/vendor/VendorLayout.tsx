@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +28,15 @@ export default function VendorLayout({ children }: VendorLayoutProps) {
     const location = useLocation();
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [vendorLogo, setVendorLogo] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (user?.role === 'vendor') {
+            api.get('/vendors/profile')
+                .then(res => setVendorLogo(res.data.logoUrl))
+                .catch(err => console.error("Failed to load vendor logo", err));
+        }
+    }, [user]);
 
     const navItems = [
         { label: 'Overview', icon: LayoutDashboard, path: '/vendor/dashboard' },
@@ -64,7 +74,11 @@ export default function VendorLayout({ children }: VendorLayoutProps) {
             >
                 <div className="p-6 border-b border-gray-50">
                     <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">M</div>
+                        {vendorLogo ? (
+                            <img src={vendorLogo} alt="Logo" className="h-8 w-8 rounded-lg object-cover" />
+                        ) : (
+                            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">M</div>
+                        )}
                         <div>
                             <h2 className="font-heading font-bold text-lg tracking-tight">MarketFly</h2>
                             <p className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Vendor Portal</p>

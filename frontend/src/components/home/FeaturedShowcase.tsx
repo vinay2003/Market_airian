@@ -19,7 +19,7 @@ const packages = [
         price: "₹80,000",
         rating: 4.8,
         location: "Goa",
-        image: "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=1974&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1639945506968-3dea2042c861?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8d2VkZGluZyUyMGltYWdlc3xlbnwwfHwwfHx8MA%3D%3D",
         tags: ["Music", "Drinks", "Venue"]
     },
     {
@@ -52,7 +52,7 @@ export default function FeaturedShowcase() {
                     </Button>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {packages.map((pkg, i) => (
                         <motion.div
                             key={i}
@@ -60,38 +60,38 @@ export default function FeaturedShowcase() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.1 }}
-                            whileHover={{ y: -10 }}
-                            className="group relative bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100"
+                            whileHover={{ y: -5 }}
+                            className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100"
                         >
-                            <div className="h-64 overflow-hidden relative">
+                            <div className="h-48 overflow-hidden relative">
                                 <img
                                     src={pkg.image}
                                     alt={pkg.title}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
-                                <div className="absolute top-4 left-4 flex gap-2">
+                                <div className="absolute top-3 left-3 flex gap-1.5">
                                     {pkg.tags.map((tag, j) => (
-                                        <Badge key={j} className="bg-white/90 text-gray-900 backdrop-blur-sm shadow-sm hover:bg-white">{tag}</Badge>
+                                        <Badge key={j} className="bg-white/90 text-gray-900 backdrop-blur-sm shadow-sm hover:bg-white text-[10px] px-2 py-0.5">{tag}</Badge>
                                     ))}
                                 </div>
-                                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg flex items-center gap-1 text-sm font-bold shadow-sm">
+                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded flex items-center gap-1 text-xs font-bold shadow-sm">
                                     <Star className="h-3 w-3 text-primary fill-primary" /> {pkg.rating}
                                 </div>
                             </div>
 
-                            <div className="p-6 space-y-4">
+                            <div className="p-4 space-y-3">
                                 <div>
-                                    <div className="text-xs text-primary font-bold uppercase tracking-wider mb-1">{pkg.vendor}</div>
-                                    <h3 className="text-xl font-heading font-bold text-gray-900 leading-tight group-hover:text-primary transition-colors">{pkg.title}</h3>
+                                    <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-0.5">{pkg.vendor}</div>
+                                    <h3 className="text-lg font-heading font-bold text-gray-900 leading-tight group-hover:text-primary transition-colors">{pkg.title}</h3>
                                 </div>
 
-                                <div className="flex items-center text-gray-500 text-sm">
-                                    <MapPin className="h-4 w-4 mr-1" /> {pkg.location}
+                                <div className="flex items-center text-gray-500 text-xs">
+                                    <MapPin className="h-3 w-3 mr-1" /> {pkg.location}
                                 </div>
 
-                                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                    <div className="text-2xl font-bold text-gray-900">{pkg.price}</div>
-                                    <Button size="sm" className="rounded-full bg-gray-900 text-white hover:bg-primary transition-colors px-6">
+                                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                                    <div className="text-xl font-bold text-gray-900">{pkg.price}</div>
+                                    <Button size="sm" className="rounded-full bg-gray-900 text-white hover:bg-primary transition-colors px-4 h-8 text-xs">
                                         Book Now
                                     </Button>
                                 </div>

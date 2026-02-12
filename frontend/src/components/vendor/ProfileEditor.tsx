@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, MapPin, Globe, Instagram, Facebook, Save, Loader2 } from 'lucide-react';
+import { Plus, Trash2, MapPin, Globe, Instagram, Facebook, Save, Loader2, Store, Image } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface Location {
@@ -38,7 +38,9 @@ export default function VendorProfileEditor() {
         gstNumber: '',
         yearsInBusiness: '',
         locations: [] as Location[],
-        socialLinks: { instagram: '', website: '', facebook: '' } as SocialLinks
+        socialLinks: { instagram: '', website: '', facebook: '' } as SocialLinks,
+        logoUrl: '',
+        bannerUrl: ''
     });
 
     useEffect(() => {
@@ -57,7 +59,9 @@ export default function VendorProfileEditor() {
                 gstNumber: data.gstNumber || '',
                 yearsInBusiness: data.yearsInBusiness?.toString() || '',
                 locations: data.locations || [],
-                socialLinks: data.socialLinks || { instagram: '', website: '', facebook: '' }
+                socialLinks: data.socialLinks || { instagram: '', website: '', facebook: '' },
+                logoUrl: data.logoUrl || '',
+                bannerUrl: data.bannerUrl || ''
             });
         } catch (error) {
             console.error("Failed to load profile", error);
@@ -103,6 +107,36 @@ export default function VendorProfileEditor() {
         }));
     };
 
+    const handleImageUpload = async (e: any, type: 'logo' | 'banner') => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+
+        try {
+            setLoading(true); // Show global loading or local loading state
+            const endpoint = type === 'logo' ? '/vendors/upload-logo' : '/vendors/upload-banner';
+            const res = await api.post(endpoint, uploadData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            const newUrl = type === 'logo' ? res.data.logoUrl : res.data.bannerUrl;
+
+            setFormData(prev => ({
+                ...prev,
+                [type === 'logo' ? 'logoUrl' : 'bannerUrl']: newUrl
+            }));
+
+            toast({ title: "Success", description: `${type === 'logo' ? 'Logo' : 'Banner'} uploaded successfully.` });
+        } catch (error) {
+            console.error(error);
+            toast({ title: "Error", description: "Failed to upload image.", variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin" /></div>;
 
     return (
@@ -126,6 +160,66 @@ export default function VendorProfileEditor() {
                 </TabsList>
 
                 <TabsContent value="business" className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Branding & Images</CardTitle>
+                            <CardDescription>Upload your logo and a profile banner.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="grid md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <Label>Business Logo</Label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-24 w-24 rounded-full border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden relative">
+                                            {formData.logoUrl ? (
+                                                <img src={formData.logoUrl} alt="Logo" className="h-full w-full object-cover" />
+                                            ) : (
+                                                <Store className="h-8 w-8 text-gray-400" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <Button variant="outline" size="sm" className="relative">
+                                                <input
+                                                    type="file"
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    onChange={(e) => handleImageUpload(e, 'logo')}
+                                                    accept="image/*"
+                                                />
+                                                Change Logo
+                                            </Button>
+                                            <p className="text-xs text-gray-500 mt-1">Recommended: 400x400px</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <Label>Profile Banner</Label>
+                                    <div className="w-full h-32 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden relative">
+                                        {formData.bannerUrl ? (
+                                            <img src={formData.bannerUrl} alt="Banner" className="h-full w-full object-cover" />
+                                        ) : (
+                                            <div className="text-gray-400 flex flex-col items-center">
+                                                <Image className="h-8 w-8 mb-1" />
+                                                <span className="text-xs">No banner uploaded</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute bottom-2 right-2">
+                                            <Button variant="secondary" size="sm" className="relative shadow-sm">
+                                                <input
+                                                    type="file"
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                    onChange={(e) => handleImageUpload(e, 'banner')}
+                                                    accept="image/*"
+                                                />
+                                                <Plus className="h-3 w-3 mr-1" /> Upload Banner
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-500">Recommended: 1200x400px. Shows on your public profile header.</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     <Card>
                         <CardHeader>
                             <CardTitle>Basic Information</CardTitle>

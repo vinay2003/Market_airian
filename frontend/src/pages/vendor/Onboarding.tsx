@@ -22,6 +22,7 @@ export default function VendorOnboarding() {
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', email: '',
         businessName: '', businessType: 'individual', city: '', address: '', pincode: '', landmark: '', description: '', gstNumber: '', yearsInBusiness: '',
+        country: '', state: '', locality: '', plotNo: '', // New Address Fields
         serviceCategories: [] as string[], acquisitionChannels: '', eventVolume: '', avgBookingPrice: '', packagesOffered: '', challenges: '', platformInterest: '', preferredPricing: '',
     });
 
@@ -65,6 +66,7 @@ export default function VendorOnboarding() {
                 ...formData,
                 yearsInBusiness: formData.yearsInBusiness ? parseInt(formData.yearsInBusiness) : 0,
                 acquisitionChannels: formData.acquisitionChannels ? formData.acquisitionChannels.split(',').map(s => s.trim()) : [],
+                address: `${formData.plotNo}, ${formData.locality}, ${formData.city}, ${formData.state}, ${formData.pincode}, ${formData.country}`, // Concat address
             };
 
             // 1. Save Profile
@@ -192,53 +194,99 @@ export default function VendorOnboarding() {
                             )}
 
                             {step === 2 && (
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label>Business Name</Label>
-                                        <Input id="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="e.g. Royal Weddings" className="h-11" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Business Description</Label>
-                                        <Input id="description" value={formData.description} onChange={handleInputChange} placeholder="Tell us about your services..." className="h-11" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-6">
+                                    <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label>Type</Label>
-                                            <Select onValueChange={(v) => handleSelectChange('businessType', v)} defaultValue={formData.businessType}>
-                                                <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="individual">Freelancer</SelectItem>
-                                                    <SelectItem value="company">Company</SelectItem>
-                                                    <SelectItem value="agency">Agency</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <Label>Business Name</Label>
+                                            <Input id="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="e.g. Royal Weddings" className="h-11" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Years Exp.</Label>
-                                            <Input id="yearsInBusiness" type="number" value={formData.yearsInBusiness} onChange={handleInputChange} placeholder="0" className="h-11" />
+                                            <Label>Business Description</Label>
+                                            <Input id="description" value={formData.description} onChange={handleInputChange} placeholder="Tell us about your services..." className="h-11" />
                                         </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>GST Number (Optional)</Label>
-                                        <Input id="gstNumber" value={formData.gstNumber} onChange={handleInputChange} placeholder="GSTIN..." className="h-11" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label>Address</Label>
-                                        <Input id="address" value={formData.address} onChange={handleInputChange} placeholder="Shop 12, Main St..." className="h-11" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>Type</Label>
+                                                <Select onValueChange={(v) => handleSelectChange('businessType', v)} defaultValue={formData.businessType}>
+                                                    <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="individual">Freelancer</SelectItem>
+                                                        <SelectItem value="company">Company</SelectItem>
+                                                        <SelectItem value="agency">Agency</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Years Exp.</Label>
+                                                <Input id="yearsInBusiness" type="number" value={formData.yearsInBusiness} onChange={handleInputChange} placeholder="0" className="h-11" />
+                                            </div>
+                                        </div>
                                         <div className="space-y-2">
-                                            <Label>Landmark</Label>
-                                            <Input id="landmark" value={formData.landmark} onChange={handleInputChange} placeholder="Near City Mall" className="h-11" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>Pincode</Label>
-                                            <Input id="pincode" value={formData.pincode} onChange={handleInputChange} placeholder="110001" className="h-11" />
+                                            <Label>GST Number (Optional)</Label>
+                                            <Input id="gstNumber" value={formData.gstNumber} onChange={handleInputChange} placeholder="GSTIN..." className="h-11" />
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label>City</Label>
-                                        <Input id="city" value={formData.city} onChange={handleInputChange} placeholder="Operating City" className="h-11" />
+
+                                    <div className="pt-2">
+                                        <div className="bg-primary/5 p-4 rounded-lg border border-primary/10 mb-4">
+                                            <h3 className="text-sm font-semibold text-primary uppercase tracking-wider mb-4 flex items-center gap-2">
+                                                <Building2 className="h-4 w-4" /> Address Details
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>Country *</Label>
+                                                        <Select onValueChange={(v) => handleSelectChange('country', v)} defaultValue={formData.country}>
+                                                            <SelectTrigger className="h-11 bg-white"><SelectValue placeholder="Select Country" /></SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="India">India</SelectItem>
+                                                                <SelectItem value="Other">Other</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>State/UT *</Label>
+                                                        <Input id="state" value={formData.state} onChange={handleInputChange} placeholder="Enter State/UT" className="h-11 bg-white" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>City *</Label>
+                                                        <Input id="city" value={formData.city} onChange={handleInputChange} placeholder="Enter City" className="h-11 bg-white" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Locality (Optional)</Label>
+                                                        <Input id="locality" value={formData.locality} onChange={handleInputChange} placeholder="Enter Locality" className="h-11 bg-white" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>Pincode *</Label>
+                                                        <Input id="pincode" value={formData.pincode} onChange={handleInputChange} placeholder="Enter Pincode" className="h-11 bg-white" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Plot No/Street/Area *</Label>
+                                                        <Input id="plotNo" value={formData.plotNo} onChange={handleInputChange} placeholder="Plot No/Street/Area" className="h-11 bg-white" />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label>Landmark (Optional)</Label>
+                                                        <Input id="landmark" value={formData.landmark} onChange={handleInputChange} placeholder="Enter Landmark" className="h-11 bg-white" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label>Mobile Number *</Label>
+                                                        <div className="flex bg-gray-50 border rounded-md h-11 items-center px-3 gap-2 overflow-hidden">
+                                                            <span className="text-gray-500 text-sm whitespace-nowrap font-medium">IN +91</span>
+                                                            <span className="text-gray-700 font-medium">{user?.phone?.replace('+91', '') || ''}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
