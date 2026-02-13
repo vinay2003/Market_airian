@@ -1,5 +1,127 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+
+// --- Typewriter Effect Component ---
+const TypewriterEffect = ({ words }: { words: string[] }) => {
+    const [index, setIndex] = useState(0);
+    const [subIndex, setSubIndex] = useState(0);
+    const [reverse, setReverse] = useState(false);
+    const [blink, setBlink] = useState(true);
+
+    // Blinking cursor
+    useEffect(() => {
+        const timeout2 = setTimeout(() => {
+            setBlink((prev) => !prev);
+        }, 500);
+        return () => clearTimeout(timeout2);
+    }, [blink]);
+
+    // Typing logic
+    useEffect(() => {
+        if (index === words.length) return;
+
+        if (subIndex === words[index].length + 1 && !reverse) {
+            setReverse(true);
+            return;
+        }
+
+        if (subIndex === 0 && reverse) {
+            setReverse(false);
+            setIndex((prev) => (prev + 1) % words.length);
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            setSubIndex((prev) => prev + (reverse ? -1 : 1));
+        }, Math.max(reverse ? 75 : subIndex === words[index].length ? 1000 : 150, parseInt((Math.random() * 350).toString())));
+
+        return () => clearTimeout(timeout);
+    }, [subIndex, index, reverse, words]);
+
+    return (
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-500">
+            {`${words[index].substring(0, subIndex)}${blink ? "|" : " "}`}
+        </span>
+    );
+};
+
+// --- Countdown Timer Component ---
+const CountdownTimer = () => {
+    const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+    useEffect(() => {
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 2); // 2 days from now
+
+        const interval = setInterval(() => {
+            const now = new Date();
+            const difference = targetDate.getTime() - now.getTime();
+
+            if (difference > 0) {
+                setTimeLeft({
+                    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+                    minutes: Math.floor((difference / 1000 / 60) % 60),
+                    seconds: Math.floor((difference / 1000) % 60)
+                });
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="flex gap-4 justify-center py-6">
+            {Object.entries(timeLeft).map(([unit, value]) => (
+                <div key={unit} className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-lg p-3 min-w-[80px] border border-white/20">
+                    <span className="text-3xl font-bold font-mono text-yellow-400">
+                        {value.toString().padStart(2, '0')}
+                    </span>
+                    <span className="text-xs text-uppercase tracking-wider opacity-80 uppercase">{unit}</span>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+// --- Slots Counter Component ---
+const SlotsCounter = () => {
+    const [count, setCount] = useState(0);
+    const target = 472; // Slots filled
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCount(prev => {
+                if (prev < target) {
+                    const diff = target - prev;
+                    return prev + Math.ceil(diff / 10);
+                }
+                return target;
+            });
+        }, 50);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="mt-4">
+            <div className="flex justify-between text-sm mb-2 font-medium">
+                <span>Slots Filled</span>
+                <span className="text-yellow-400">{count} / 500</span>
+            </div>
+            <div className="h-3 w-full bg-white/10 rounded-full overflow-hidden border border-white/10">
+                <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(count / 500) * 100}%` }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
+                />
+            </div>
+            <p className="text-xs text-gray-400 mt-2 text-right">Only {500 - count} spots remaining!</p>
+        </div>
+    );
+};
+
+
 import { Button } from '@/components/ui/button';
 
 import { Search, MapPin, ArrowRight, Star, Heart, Camera, Music, Utensils, Home } from 'lucide-react';
@@ -73,20 +195,18 @@ export default function Landing() {
 
                 <motion.div
                     style={{ opacity, scale, y }}
-                    className="container px-4 md:px-6 relative z-10 text-center text-white space-y-8"
+                    className="container px-4 md:px-6 relative z-20 text-center text-white space-y-8"
                 >
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-heading mb-4 tracking-tight">
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-heading mb-4 tracking-tight drop-shadow-xl">
                             Create Unforgettable <br className="hidden md:block" />
-                            <span className="text-primary-foreground bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 to-amber-500">
-                                Moments
-                            </span>
+                            <TypewriterEffect words={["Weddings", "Parties", "Events", "Moments"]} />
                         </h1>
-                        <p className="max-w-[700px] mx-auto text-lg md:text-xl text-gray-200">
+                        <p className="max-w-[700px] mx-auto text-lg md:text-xl text-gray-200 drop-shadow-md">
                             Discover and book the best vendors for your wedding, corporate event, or private party.
                         </p>
                     </motion.div>
@@ -96,25 +216,25 @@ export default function Landing() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.8 }}
-                        className="max-w-3xl mx-auto bg-white/10 backdrop-blur-xl p-3 md:p-2 rounded-3xl md:rounded-full border border-white/20 shadow-2xl flex flex-col md:flex-row gap-3 md:gap-2"
+                        className="max-w-3xl mx-auto bg-white/10 backdrop-blur-xl p-3 md:p-2 rounded-3xl md:rounded-full border border-white/40 shadow-2xl flex flex-col md:flex-row gap-3 md:gap-2 ring-1 ring-black/5"
                     >
-                        <div className="flex-1 flex items-center px-4 h-14 bg-white/5 md:bg-transparent rounded-2xl md:rounded-none border border-white/5 md:border-none focus-within:bg-white/10 transition-colors">
-                            <Search className="text-gray-300 w-5 h-5 mr-3 shrink-0" />
+                        <div className="flex-1 flex items-center px-4 h-14 bg-white/5 md:bg-transparent rounded-2xl md:rounded-none border border-white/30 md:border-none focus-within:bg-white/10 transition-colors">
+                            <Search className="text-gray-200 w-5 h-5 mr-3 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="Service (e.g. Photography)"
-                                className="bg-transparent border-none outline-none text-white placeholder:text-gray-300/80 w-full h-full text-base"
+                                className="bg-transparent border-none outline-none text-white placeholder:text-gray-300 w-full h-full text-base font-medium"
                             />
                         </div>
-                        <div className="flex-1 flex items-center px-4 h-14 md:border-l md:border-white/20 bg-white/5 md:bg-transparent rounded-2xl md:rounded-none border border-white/5 md:border-none focus-within:bg-white/10 transition-colors">
-                            <MapPin className="text-gray-300 w-5 h-5 mr-3 shrink-0" />
+                        <div className="flex-1 flex items-center px-4 h-14 md:border-l md:border-white/30 bg-white/5 md:bg-transparent rounded-2xl md:rounded-none border border-white/30 md:border-none focus-within:bg-white/10 transition-colors">
+                            <MapPin className="text-gray-200 w-5 h-5 mr-3 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="City (e.g. Mumbai)"
-                                className="bg-transparent border-none outline-none text-white placeholder:text-gray-300/80 w-full h-full text-base"
+                                className="bg-transparent border-none outline-none text-white placeholder:text-gray-300 w-full h-full text-base font-medium"
                             />
                         </div>
-                        <Button size="lg" className="rounded-2xl md:rounded-full w-full md:w-auto px-8 h-14 text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all duration-300">
+                        <Button size="lg" className="rounded-2xl md:rounded-full w-full md:w-auto px-8 h-14 text-lg font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-amber-500/25 transition-all duration-300 border border-amber-400/50">
                             Search
                         </Button>
                     </motion.div>
@@ -128,7 +248,7 @@ export default function Landing() {
                     >
                         <span>Popular:</span>
                         {['Wedding Photography', 'Banquet Halls', 'Makeup Artists', 'DJs'].map((tag) => (
-                            <button key={tag} className="hover:text-white underline decoration-dotted underline-offset-4 decoration-gray-500">
+                            <button key={tag} className="hover:text-white underline decoration-dotted underline-offset-4 decoration-gray-500 transition-colors">
                                 {tag}
                             </button>
                         ))}
@@ -260,12 +380,171 @@ export default function Landing() {
                         ))}
                     </div>
 
-                    <div className="text-center pt-8">
-                        <Link to="/vendors">
-                            <Button size="lg" variant="outline" className="rounded-full px-8 h-12 text-base font-medium hover:bg-secondary transition-colors">
-                                Browse All Vendors
-                            </Button>
-                        </Link>
+                </div>
+            </section>
+
+            {/* How It Works Section */}
+            < section className="py-20 bg-white" >
+                <div className="container px-4 md:px-6">
+                    <div className="text-center mb-16 space-y-4">
+                        <span className="text-primary font-bold tracking-wider uppercase text-sm">Simple Process</span>
+                        <h2 className="text-3xl md:text-5xl font-bold font-heading text-gray-900">How MarketFly Works</h2>
+                        <p className="text-gray-500 max-w-2xl mx-auto text-lg">Planning your dream event has never been easier. Follow these simple steps.</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-12 relative">
+                        {/* Connecting Line (Desktop) */}
+                        <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gray-200 -z-10"></div>
+
+                        {[
+                            {
+                                step: "01",
+                                title: "Discover",
+                                desc: "Browse thousands of top-rated vendors with transparent pricing and reviews.",
+                                icon: Search,
+                                color: "bg-blue-100 text-blue-600"
+                            },
+                            {
+                                step: "02",
+                                title: "Connect",
+                                desc: "Chat directly with vendors, get quotes, and check availability instantly.",
+                                icon: Heart, // Using Heart as a placeholder for 'Connect/Chat' vibe
+                                color: "bg-purple-100 text-purple-600"
+                            },
+                            {
+                                step: "03",
+                                title: "Book",
+                                desc: "Secure your date with a small deposit and enjoy a stress-free event.",
+                                icon: Star, // Using Star for 'Success/Book'
+                                color: "bg-green-100 text-green-600"
+                            }
+                        ].map((item, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.2 }}
+                                className="relative flex flex-col items-center text-center space-y-6"
+                            >
+                                <div className={`w-24 h-24 rounded-full ${item.color} flex items-center justify-center shadow-xl relative z-10 group transition-transform hover:scale-110 duration-300`}>
+                                    <item.icon className="w-10 h-10" />
+                                    <div className="absolute -top-2 -right-2 bg-gray-900 text-white text-xs font-bold w-8 h-8 flex items-center justify-center rounded-full border-4 border-white">
+                                        {item.step}
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold mb-3 text-gray-900">{item.title}</h3>
+                                    <p className="text-gray-600 leading-relaxed">{item.desc}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section >
+
+
+
+            {/* Early Bird Offer Section */}
+            <section className="py-20 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 animate-pulse"></div>
+
+                {/* Floating Elements */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <motion.div
+                        animate={{ y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }}
+                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute top-20 left-10 w-32 h-32 bg-yellow-500/20 rounded-full blur-3xl"
+                    />
+                    <motion.div
+                        animate={{ y: [0, 30, 0], opacity: [0.3, 0.5, 0.3] }}
+                        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute bottom-20 right-10 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl"
+                    />
+                </div>
+
+                <div className="container px-4 md:px-6 relative z-10 text-center space-y-8">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        className="inline-block"
+                    >
+                        <span className="bg-yellow-400 text-indigo-900 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wider mb-4 inline-block shadow-lg">
+                            Early Bird Offer
+                        </span>
+                    </motion.div>
+
+                    <h2 className="text-4xl md:text-5xl font-heading font-bold mb-2 leading-tight">
+                        Be Among the First 500 Vendors. <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-400">
+                            Get 50% Launch Discount
+                        </span>
+                    </h2>
+
+                    <CountdownTimer />
+
+                    <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto my-12 text-left">
+                        {[
+                            { title: "0% Commission", desc: "Keep 100% of what you earn on all bookings. No hidden fees.", color: "text-yellow-300" },
+                            { title: "Founding Member Badge", desc: "Exclusive profile badge to standout and build trust instantly.", color: "text-yellow-300" },
+                            { title: "Premium Visibility", desc: "Secure top spots in search results before the market gets crowded.", color: "text-yellow-300" }
+                        ].map((card, idx) => (
+                            <motion.div
+                                key={idx}
+                                whileHover={{ y: -10, scale: 1.02 }}
+                                className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 hover:bg-white/15 hover:border-yellow-400/50 transition-colors shadow-lg"
+                            >
+                                <h3 className={`text-xl font-bold mb-2 ${card.color}`}>{card.title}</h3>
+                                <p className="text-gray-200">{card.desc}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    <div className="bg-white/5 p-8 rounded-3xl max-w-3xl mx-auto border border-white/10 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-yellow-400"></div>
+                        <p className="text-xl md:text-2xl font-light mb-8 italic">
+                            "Whether you run a banquet hall, photography studio, catering service, or décor business — <strong className="font-bold text-white not-italic">Airion helps you scale faster.</strong>"
+                        </p>
+
+                        <div className="max-w-md mx-auto">
+                            <SlotsCounter />
+
+                            <div className="mt-8">
+                                <Link to="/vendor/onboarding">
+                                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                        <Button size="lg" className="bg-yellow-400 text-indigo-900 hover:bg-yellow-300 font-bold text-lg px-10 h-16 rounded-full shadow-xl hover:shadow-yellow-400/30 transition-all w-full md:w-auto relative overflow-hidden group">
+                                            <span className="relative z-10 flex items-center gap-2">
+                                                Secure Your Spot Today <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                            </span>
+                                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                                        </Button>
+                                    </motion.div>
+                                </Link>
+                                <p className="text-sm text-gray-400 mt-3 animate-pulse">
+                                    Launch Offer Ends Soon!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-12 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-70">
+                        <div className="text-center">
+                            <h4 className="text-3xl font-bold mb-1">500+</h4>
+                            <p className="text-sm">Vendors Joined</p>
+                        </div>
+                        <div className="text-center">
+                            <h4 className="text-3xl font-bold mb-1">0%</h4>
+                            <p className="text-sm">Commission Fee</p>
+                        </div>
+                        <div className="text-center">
+                            <h4 className="text-3xl font-bold mb-1">10x</h4>
+                            <p className="text-sm">Reach Increase</p>
+                        </div>
+                        <div className="text-center">
+                            <h4 className="text-3xl font-bold mb-1">24/7</h4>
+                            <p className="text-sm">Support Team</p>
+                        </div>
                     </div>
                 </div>
             </section>
