@@ -7,8 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Search, MapPin, Filter, Star, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import Navbar from '@/components/home/Navbar';
-import Footer from '@/components/home/Footer';
+
 
 // Mock Data
 const VENDORS = [
@@ -18,7 +17,7 @@ const VENDORS = [
         category: 'Photography',
         rating: 4.9,
         reviews: 124,
-        image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop',
+        image: '/images/WhatsApp Image 2026-02-10 at 22.00.11.jpeg',
         location: 'Mumbai, India',
         price: 45000,
         tags: ['Wedding', 'Candid', 'Drone']
@@ -29,7 +28,7 @@ const VENDORS = [
         category: 'Venue',
         rating: 4.8,
         reviews: 89,
-        image: 'https://images.unsplash.com/photo-1519167758481-83f550bb490e?q=80&w=1000&auto=format&fit=crop',
+        image: '/images/WhatsApp Image 2026-02-10 at 22.00.14.jpeg',
         location: 'Udaipur, India',
         price: 200000,
         tags: ['Outdoor', 'Banquet', 'Heritage']
@@ -40,7 +39,7 @@ const VENDORS = [
         category: 'Catering',
         rating: 5.0,
         reviews: 56,
-        image: 'https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=1000&auto=format&fit=crop',
+        image: '/images/WhatsApp Image 2026-02-10 at 22.00.16.jpeg',
         location: 'Delhi, India',
         price: 1200,
         priceUnit: '/plate',
@@ -52,7 +51,7 @@ const VENDORS = [
         category: 'Entertainment',
         rating: 4.7,
         reviews: 42,
-        image: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=1000&auto=format&fit=crop',
+        image: '/images/WhatsApp Image 2026-02-10 at 22.00.18.jpeg',
         location: 'Bangalore, India',
         price: 25000,
         tags: ['Bollywood', 'EDM', 'Live']
@@ -63,7 +62,7 @@ const VENDORS = [
         category: 'Decoration',
         rating: 4.6,
         reviews: 31,
-        image: 'https://images.unsplash.com/photo-1478146896981-b80fe463b330?q=80&w=1000&auto=format&fit=crop',
+        image: '/images/WhatsApp Image 2026-02-10 at 22.00.19.jpeg',
         location: 'Pune, India',
         price: 35000,
         tags: ['Floral', 'Modern', 'Theme']
@@ -88,28 +87,26 @@ export default function BrowseVendors() {
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <Navbar />
-
             {/* Header */}
-            <div className="bg-primary/5 py-12 border-b">
+            <div className="bg-primary/5 pt-28 pb-12 border-b">
                 <div className="container px-4 md:px-6">
                     <h1 className="text-3xl font-bold tracking-tight mb-4">Find the Perfect Vendor</h1>
 
                     <div className="flex flex-col md:flex-row gap-4 max-w-4xl">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <Search className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                             <Input
                                 placeholder="Search by name or location..."
-                                className="pl-9 h-10 bg-background"
+                                className="pl-10 h-12 bg-background text-base"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <div className="relative flex-1 md:flex-none md:w-[200px]">
-                            <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="City" className="pl-9 h-10 bg-background" />
+                        <div className="relative flex-1 md:flex-none md:w-[240px]">
+                            <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+                            <Input placeholder="City" className="pl-10 h-12 bg-background text-base" />
                         </div>
-                        <Button className="h-10 px-8">Search</Button>
+                        <Button className="h-12 px-8 text-base">Search</Button>
                     </div>
                 </div>
             </div>
@@ -263,7 +260,6 @@ export default function BrowseVendors() {
                     </div>
                 </div>
             </main>
-            <Footer />
         </div>
     );
 }
