@@ -9,15 +9,16 @@ import { ArtisticBackground } from './ArtisticBackground';
 
 
 export default function Login() {
-    const [step, setStep] = useState<'role' | 'phone'>('role');
+    const [step, setStep] = useState<'role' | 'phone' | 'otp'>('role');
     const [role, setRole] = useState<'user' | 'vendor' | 'admin'>('user');
     const [phone, setPhone] = useState('');
+    const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogin = async () => {
+    const handleSendOtp = async () => {
         if (phone.length < 10) {
             setError('Please enter a valid phone number');
             return;
@@ -26,30 +27,42 @@ export default function Login() {
         setError('');
 
         try {
-            const response = await api.post('/auth/login', { phone, role });
+            await api.post('/auth/login', { phone, role });
+            // API sends OTP. Move to OTP step.
+            setStep('otp');
+        } catch (error) {
+            console.error('Failed to send OTP', error);
+            setError('Failed to send OTP. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (otp.length < 6) {
+            setError('Please enter the 6-digit code');
+            return;
+        }
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const response = await api.post('/auth/verify', { phone, otp, role });
             const { accessToken, user } = response.data;
             login(accessToken, user);
 
             if (user.role === 'vendor') {
-                navigate('/vendor/onboarding');
+                navigate('/vendor/dashboard');
             } else if (user.role === 'user') {
-                navigate('/user/onboarding');
+                navigate('/user/dashboard');
             } else {
                 navigate('/');
             }
         } catch (error) {
             console.error('Login failed', error);
-            if (import.meta.env.DEV) {
-                setTimeout(() => {
-                    login('demo-token', { role, id: '1', phone });
-                    if (role === 'vendor') navigate('/vendor/onboarding');
-                    else navigate('/user/onboarding');
-                }, 1500);
-            } else {
-                setError('Login failed. Please try again.');
-            }
+            setError('Invalid OTP or login failed.');
         } finally {
-            // setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -93,17 +106,17 @@ export default function Login() {
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: "4rem" }}
-                            transition={{ delay: 0.2, duration: 0.8, ease: "circOut" }}
+                            transition={{ delay: 0.1, duration: 0.4, ease: "circOut" }}
                             className="h-1 bg-primary mb-8 rounded-full"
                         />
-                        <AnimatedHeading text={step === 'role' ? 'Get Started' : 'Verify Identity'} />
+                        <AnimatedHeading text={step === 'role' ? 'Get Started' : (step === 'phone' ? 'Verify Identity' : 'Enter Code')} />
                         <motion.p
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            transition={{ delay: 0.6 }}
+                            transition={{ delay: 0.2 }}
                             className="text-gray-500 text-lg"
                         >
-                            {step === 'role' ? 'Select your account type to begin.' : 'Enter your mobile number for a secure code.'}
+                            {step === 'role' ? 'Select your account type to begin.' : (step === 'phone' ? 'Enter your mobile number for a secure code.' : `We sent a code to +91 ${phone}`)}
                         </motion.p>
                     </div>
 
@@ -114,7 +127,7 @@ export default function Login() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 20 }}
-                                transition={{ duration: 0.4 }}
+                                transition={{ duration: 0.2 }}
                                 className="space-y-4"
                             >
                                 <RoleCard
@@ -122,20 +135,20 @@ export default function Login() {
                                     description="I want to hire vendors"
                                     active={role === 'user'}
                                     onClick={() => setRole('user')}
-                                    delay={0.1}
+                                    delay={0}
                                 />
                                 <RoleCard
                                     title="List My Business"
                                     description="I am a service provider"
                                     active={role === 'vendor'}
                                     onClick={() => setRole('vendor')}
-                                    delay={0.2}
+                                    delay={0.1}
                                 />
 
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.4 }}
+                                    transition={{ delay: 0.2 }}
                                     className="pt-8"
                                 >
                                     <MagneticButton onClick={() => setStep('phone')} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
@@ -172,11 +185,11 @@ export default function Login() {
                                 </div>
 
                                 <div className="flex flex-col gap-4 pt-4">
-                                    <MagneticButton onClick={handleLogin} disabled={isLoading} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
+                                    <MagneticButton onClick={handleSendOtp} disabled={isLoading} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
                                         {isLoading ? (
-                                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Verifying...</>
+                                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Sending...</>
                                         ) : (
-                                            'Login'
+                                            'Get OTP'
                                         )}
                                     </MagneticButton>
 
@@ -190,6 +203,56 @@ export default function Login() {
                                         disabled={isLoading}
                                     >
                                         <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {step === 'otp' && (
+                            <motion.div
+                                key="otp"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-8"
+                            >
+                                <div className="space-y-4">
+                                    <label className="uppercase text-xs font-bold tracking-wider text-gray-500">
+                                        Enter OTP <span className="text-red-500">*</span>
+                                    </label>
+                                    <AnimatedInput
+                                        placeholder="123456"
+                                        value={otp}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                            setOtp(val);
+                                            setError('');
+                                        }}
+                                        type="tel"
+                                        autoFocus
+                                        error={error}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-4 pt-4">
+                                    <MagneticButton onClick={handleVerifyOtp} disabled={isLoading} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
+                                        {isLoading ? (
+                                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Verifying...</>
+                                        ) : (
+                                            'Login'
+                                        )}
+                                    </MagneticButton>
+
+                                    <Button
+                                        variant="ghost"
+                                        className="w-full hover:bg-gray-50 text-gray-500"
+                                        onClick={() => {
+                                            setStep('phone');
+                                            setError('');
+                                        }}
+                                        disabled={isLoading}
+                                    >
+                                        <ArrowLeft className="mr-2 h-4 w-4" /> Change Phone
                                     </Button>
                                 </div>
                             </motion.div>

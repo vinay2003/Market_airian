@@ -97,7 +97,7 @@ export function Sidebar({ className }: SidebarProps) {
     const routes = user?.role === 'vendor' ? vendorRoutes : userRoutes;
 
     return (
-        <div className={cn("pb-12 w-64 border-r bg-card h-screen fixed left-0 top-0 hidden md:block", className)}>
+        <div className={cn("pb-12 w-64 border-r bg-card h-screen fixed left-0 top-0 z-30 transition-transform duration-300 transform", className)}>
             <div className="space-y-4 py-4 h-full flex flex-col">
                 <div className="px-4 py-2 flex-none">
                     <h2 className="mb-2 px-2 text-xl font-heading font-bold tracking-tight text-primary">
