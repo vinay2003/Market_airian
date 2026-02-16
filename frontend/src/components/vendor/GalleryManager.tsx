@@ -60,7 +60,7 @@ export default function GalleryManager() {
             await api.delete(`/vendors/gallery/${id}`);
             setGallery(gallery.filter(item => item.id !== id));
             toast({ title: "Deleted", description: "Item removed from gallery." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to delete item.", variant: "destructive" });
         }
     };

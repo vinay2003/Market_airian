@@ -88,6 +88,19 @@
   h6 {
     @apply font-heading tracking-tight;
   }
+
+  /* Responsive Typography */
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
 }
 
 @layer utilities {
@@ -97,5 +110,14 @@
 
   .glass-card {
     @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  /* Responsive Spacing Utilities */
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .container-padding {
+    @apply px-4 md:px-6 lg:px-8;
   }
 }

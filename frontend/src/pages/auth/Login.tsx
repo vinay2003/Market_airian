@@ -83,7 +83,7 @@ export default function Login() {
             </div>
 
             {/* Right: Login Form */}
-            <div className="flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-white relative">
+            <div className="flex flex-col justify-center p-6 md:p-16 lg:p-24 bg-white relative min-h-screen lg:min-h-0">
                 <Link to="/" className="absolute top-8 right-8 flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-primary transition-colors group">
                     Back to Home <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </Link>
@@ -154,12 +154,15 @@ export default function Login() {
                                 className="space-y-8"
                             >
                                 <div className="space-y-4">
-                                    <label className="uppercase text-xs font-semibold tracking-wider text-gray-400">Mobile Number</label>
+                                    <label className="uppercase text-xs font-bold tracking-wider text-gray-500">
+                                        Mobile Number <span className="text-red-500">*</span>
+                                    </label>
                                     <AnimatedInput
                                         placeholder="98765 43210"
                                         value={phone}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                            setPhone(e.target.value);
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            setPhone(val);
                                             setError('');
                                         }}
                                         type="tel"

@@ -24,16 +24,16 @@ const testimonials = [
 
 export default function Testimonials() {
     return (
-        <section className="py-24 bg-secondary/20 relative overflow-hidden" id="testimonials">
+        <section className="section-padding bg-secondary/20 relative overflow-hidden" id="testimonials">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/diamond-upholstery.png')] opacity-5 pointer-events-none" />
 
-            <div className="max-w-7xl mx-auto px-6 relative z-10">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-heading font-bold text-gray-900 mb-4">Love Stories</h2>
-                    <p className="text-gray-500 max-w-xl mx-auto">Hear from the people who made their dreams come true with us.</p>
+            <div className="max-w-7xl mx-auto container-padding relative z-10">
+                <div className="text-center mb-10 md:mb-16">
+                    <h2 className="text-3xl md:text-5xl font-heading font-bold text-gray-900 mb-4">Love Stories</h2>
+                    <p className="text-gray-500 max-w-xl mx-auto text-sm md:text-base">Hear from the people who made their dreams come true with us.</p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-3 gap-6 md:gap-8">
                     {testimonials.map((t, i) => (
                         <motion.div
                             key={i}
@@ -41,20 +41,20 @@ export default function Testimonials() {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.2 }}
-                            className="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-sm border border-white/40 flex flex-col relative"
+                            className="bg-white/80 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm border border-white/40 flex flex-col relative"
                         >
-                            <Quote className="h-10 w-10 text-primary/20 absolute top-6 right-6" />
+                            <Quote className="h-8 w-8 md:h-10 md:w-10 text-primary/20 absolute top-6 right-6" />
 
                             <div className="flex gap-1 text-primary mb-6">
-                                {[1, 2, 3, 4, 5].map(star => <Star key={star} className="h-4 w-4 fill-current" />)}
+                                {[1, 2, 3, 4, 5].map(star => <Star key={star} className="h-3 w-3 md:h-4 md:w-4 fill-current" />)}
                             </div>
 
-                            <p className="text-gray-600 italic mb-8 flex-grow leading-relaxed">"{t.text}"</p>
+                            <p className="text-gray-600 italic mb-8 flex-grow leading-relaxed text-sm md:text-base">"{t.text}"</p>
 
                             <div className="flex items-center gap-4">
-                                <img src={t.image} alt={t.name} className="h-12 w-12 rounded-full object-cover border-2 border-primary/20" />
+                                <img src={t.image} alt={t.name} className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border-2 border-primary/20" />
                                 <div>
-                                    <div className="font-bold text-gray-900">{t.name}</div>
+                                    <div className="font-bold text-gray-900 text-sm md:text-base">{t.name}</div>
                                     <div className="text-xs text-primary font-medium">{t.role}</div>
                                 </div>
                             </div>

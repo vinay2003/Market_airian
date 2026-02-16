@@ -29,11 +29,11 @@ export default function VendorOnboarding() {
     const [statusMessage, setStatusMessage] = useState('');
     const [logo, setLogo] = useState<File | null>(null);
 
-    const handleInputChange = (e: any) => setFormData({ ...formData, [e.target.id]: e.target.value });
-    const handleSelectChange = (field: string, value: string) => setFormData({ ...formData, [field]: value });
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, [e.target.id]: e.target.value });
+    const handleSelectChange = (field: string, value: string | string[]) => setFormData({ ...formData, [field]: value });
 
     // Compress image immediately upon selection
-    const handleFileChange = async (e: any) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
             const file = e.target.files[0];
             try {
@@ -103,9 +103,10 @@ export default function VendorOnboarding() {
             }
 
             navigate('/vendor/dashboard');
-        } catch (error: any) {
+        } catch (error) {
             console.error('Onboarding failed', error);
-            if (error.response?.status === 401) {
+            const err = error as { response?: { status: number } }; // Cast to access response
+            if (err.response?.status === 401) {
                 alert("Account role update required. Please log in again.");
                 logout();
                 navigate('/login');
@@ -122,6 +123,41 @@ export default function VendorOnboarding() {
         enter: (direction: number) => ({ x: direction > 0 ? 100 : -100, opacity: 0 }),
         center: { x: 0, opacity: 1 },
         exit: (direction: number) => ({ x: direction < 0 ? 100 : -100, opacity: 0 }),
+    };
+
+    const validateStep = (currentStep: number) => {
+        const errors: string[] = [];
+        if (currentStep === 1) {
+            if (!formData.firstName.trim()) errors.push("First Name is required");
+            if (!formData.lastName.trim()) errors.push("Last Name is required");
+            if (!formData.email.trim()) errors.push("Email is required");
+        }
+        if (currentStep === 2) {
+            if (!formData.businessName.trim()) errors.push("Business Name is required");
+            if (!formData.description.trim()) errors.push("Business Description is required");
+            if (!formData.country) errors.push("Country is required");
+            if (!formData.state.trim()) errors.push("State is required");
+            if (!formData.city.trim()) errors.push("City is required");
+            if (!formData.pincode.trim()) errors.push("Pincode is required");
+            if (!formData.plotNo.trim()) errors.push("Address is required");
+        }
+        if (currentStep === 3) {
+            if (formData.serviceCategories.length === 0) errors.push("Select at least one service category");
+            if (!formData.avgBookingPrice) errors.push("Select average booking price");
+        }
+        // Step 4 (Logo) is optional but good to have
+
+        if (errors.length > 0) {
+            alert(errors[0]); // Simple alert for now, could use toast or inline error
+            return false;
+        }
+        return true;
+    };
+
+    const handleNext = () => {
+        if (validateStep(step)) {
+            setStep(s => Math.min(4, s + 1));
+        }
     };
 
     const steps = [
@@ -172,23 +208,23 @@ export default function VendorOnboarding() {
                         >
                             {step === 1 && (
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="firstName">First Name</Label>
-                                            <Input id="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Enter your first name" className="h-11" />
+                                            <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
+                                            <Input id="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Enter your first name" className="h-11" required />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="lastName">Last Name</Label>
-                                            <Input id="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Enter your last name" className="h-11" />
+                                            <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
+                                            <Input id="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Enter your last name" className="h-11" required />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="email">Email</Label>
-                                        <Input id="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="you@company.com" className="h-11" />
+                                        <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
+                                        <Input id="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="you@company.com" className="h-11" required />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Phone Verified</Label>
-                                        <Input value={user?.phone || ''} disabled className="bg-gray-50 border-green-200 text-green-700 font-medium" />
+                                        <Label>Phone Verified <CheckCircle className="inline h-3 w-3 text-green-500 ml-1" /></Label>
+                                        <Input value={user?.phone || ''} disabled className="bg-gray-50 border-green-200 text-green-700 font-medium opacity-100" />
                                     </div>
                                 </div>
                             )}
@@ -197,16 +233,16 @@ export default function VendorOnboarding() {
                                 <div className="space-y-6">
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label>Business Name</Label>
-                                            <Input id="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="e.g. Royal Weddings" className="h-11" />
+                                            <Label>Business Name <span className="text-red-500">*</span></Label>
+                                            <Input id="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="e.g. Royal Weddings" className="h-11" required />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Business Description</Label>
-                                            <Input id="description" value={formData.description} onChange={handleInputChange} placeholder="Tell us about your services..." className="h-11" />
+                                            <Label>Business Description <span className="text-red-500">*</span></Label>
+                                            <Input id="description" value={formData.description} onChange={handleInputChange} placeholder="Tell us about your services..." className="h-11" required />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label>Type</Label>
+                                                <Label>Type <span className="text-red-500">*</span></Label>
                                                 <Select onValueChange={(v) => handleSelectChange('businessType', v)} defaultValue={formData.businessType}>
                                                     <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                                                     <SelectContent>
@@ -217,12 +253,12 @@ export default function VendorOnboarding() {
                                                 </Select>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Years Exp.</Label>
+                                                <Label>Years Exp. <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                                 <Input id="yearsInBusiness" type="number" value={formData.yearsInBusiness} onChange={handleInputChange} placeholder="0" className="h-11" />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>GST Number (Optional)</Label>
+                                            <Label>GST Number <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                             <Input id="gstNumber" value={formData.gstNumber} onChange={handleInputChange} placeholder="GSTIN..." className="h-11" />
                                         </div>
                                     </div>
@@ -233,9 +269,9 @@ export default function VendorOnboarding() {
                                                 <Building2 className="h-4 w-4" /> Address Details
                                             </h3>
                                             <div className="space-y-4">
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label>Country *</Label>
+                                                        <Label>Country <span className="text-red-500">*</span></Label>
                                                         <Select onValueChange={(v) => handleSelectChange('country', v)} defaultValue={formData.country}>
                                                             <SelectTrigger className="h-11 bg-white"><SelectValue placeholder="Select Country" /></SelectTrigger>
                                                             <SelectContent>
@@ -245,41 +281,41 @@ export default function VendorOnboarding() {
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>State/UT *</Label>
-                                                        <Input id="state" value={formData.state} onChange={handleInputChange} placeholder="Enter State/UT" className="h-11 bg-white" />
+                                                        <Label>State/UT <span className="text-red-500">*</span></Label>
+                                                        <Input id="state" value={formData.state} onChange={handleInputChange} placeholder="Enter State/UT" className="h-11 bg-white" required />
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label>City *</Label>
-                                                        <Input id="city" value={formData.city} onChange={handleInputChange} placeholder="Enter City" className="h-11 bg-white" />
+                                                        <Label>City <span className="text-red-500">*</span></Label>
+                                                        <Input id="city" value={formData.city} onChange={handleInputChange} placeholder="Enter City" className="h-11 bg-white" required />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>Locality (Optional)</Label>
+                                                        <Label>Locality <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                                         <Input id="locality" value={formData.locality} onChange={handleInputChange} placeholder="Enter Locality" className="h-11 bg-white" />
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label>Pincode *</Label>
-                                                        <Input id="pincode" value={formData.pincode} onChange={handleInputChange} placeholder="Enter Pincode" className="h-11 bg-white" />
+                                                        <Label>Pincode <span className="text-red-500">*</span></Label>
+                                                        <Input id="pincode" value={formData.pincode} onChange={handleInputChange} placeholder="Enter Pincode" className="h-11 bg-white" required />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>Plot No/Street/Area *</Label>
-                                                        <Input id="plotNo" value={formData.plotNo} onChange={handleInputChange} placeholder="Plot No/Street/Area" className="h-11 bg-white" />
+                                                        <Label>Plot No/Street/Area <span className="text-red-500">*</span></Label>
+                                                        <Input id="plotNo" value={formData.plotNo} onChange={handleInputChange} placeholder="Plot No/Street/Area" className="h-11 bg-white" required />
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label>Landmark (Optional)</Label>
+                                                        <Label>Landmark <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                                         <Input id="landmark" value={formData.landmark} onChange={handleInputChange} placeholder="Enter Landmark" className="h-11 bg-white" />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>Mobile Number *</Label>
-                                                        <div className="flex bg-gray-50 border rounded-md h-11 items-center px-3 gap-2 overflow-hidden">
+                                                        <Label>Mobile Number <span className="text-red-500">*</span></Label>
+                                                        <div className="flex bg-gray-50 border rounded-md h-11 items-center px-3 gap-2 overflow-hidden cursor-not-allowed opacity-80">
                                                             <span className="text-gray-500 text-sm whitespace-nowrap font-medium">IN +91</span>
                                                             <span className="text-gray-700 font-medium">{user?.phone?.replace('+91', '') || ''}</span>
                                                         </div>
@@ -293,9 +329,9 @@ export default function VendorOnboarding() {
 
                             {step === 3 && (
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label>Monthly Events</Label>
+                                            <Label>Monthly Events <span className="text-red-500">*</span></Label>
                                             <Select onValueChange={(v) => handleSelectChange('eventVolume', v)} defaultValue={formData.eventVolume}>
                                                 <SelectTrigger className="h-11"><SelectValue placeholder="Select Volume" /></SelectTrigger>
                                                 <SelectContent>
@@ -306,7 +342,7 @@ export default function VendorOnboarding() {
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Avg Price</Label>
+                                            <Label>Avg Price <span className="text-red-500">*</span></Label>
                                             <Select onValueChange={(v) => handleSelectChange('avgBookingPrice', v)} defaultValue={formData.avgBookingPrice}>
                                                 <SelectTrigger className="h-11"><SelectValue placeholder="Select Range" /></SelectTrigger>
                                                 <SelectContent>
@@ -318,7 +354,7 @@ export default function VendorOnboarding() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Service Categories</Label>
+                                        <Label>Service Categories <span className="text-red-500">*</span></Label>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <Button
@@ -355,7 +391,7 @@ export default function VendorOnboarding() {
                                                                         const updated = current.includes(category)
                                                                             ? current.filter((c) => c !== category)
                                                                             : [...current, category];
-                                                                        handleSelectChange('serviceCategories', updated as any);
+                                                                        handleSelectChange('serviceCategories', updated);
                                                                     }}
                                                                 >
                                                                     <Check
@@ -389,7 +425,7 @@ export default function VendorOnboarding() {
                                                 </div>
                                             )}
                                             <div>
-                                                <p className="font-semibold text-lg">{logo ? logo.name : "Upload Logo"}</p>
+                                                <p className="font-semibold text-lg">{logo ? logo.name : "Upload Logo (Recommended)"}</p>
                                                 <p className="text-sm text-gray-500">{logo ? "Click to change" : "Drag & drop or click to browse"}</p>
                                             </div>
                                         </div>
@@ -410,7 +446,7 @@ export default function VendorOnboarding() {
                     </Button>
 
                     {step < 4 ? (
-                        <Button onClick={() => setStep(s => Math.min(4, s + 1))} className="bg-black hover:bg-gray-800 text-white rounded-full px-6">
+                        <Button onClick={handleNext} className="bg-black hover:bg-gray-800 text-white rounded-full px-6">
                             Next Step <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     ) : (

@@ -59,7 +59,7 @@ export default function Settings() {
             });
             updateUser(data);
             toast({ title: "Profile Updated", description: "Your account details have been saved." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -76,7 +76,7 @@ export default function Settings() {
             await api.patch('/users/me', { password: passwordForm.newPassword });
             toast({ title: "Password Updated", description: "Your password has been changed." });
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update password.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -89,7 +89,7 @@ export default function Settings() {
             const { data } = await api.patch('/users/me', { notificationPreferences: notificationForm });
             updateUser(data);
             toast({ title: "Preferences Saved", description: "Notification settings updated." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update preferences.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -104,7 +104,7 @@ export default function Settings() {
             </div>
 
             <Tabs defaultValue="account" className="space-y-4">
-                <TabsList>
+                <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
                     <TabsTrigger value="account">Account</TabsTrigger>
                     <TabsTrigger value="security">Security</TabsTrigger>
                     <TabsTrigger value="notifications">Notifications</TabsTrigger>

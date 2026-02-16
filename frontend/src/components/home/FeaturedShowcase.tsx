@@ -35,19 +35,19 @@ const packages = [
 
 export default function FeaturedShowcase() {
     return (
-        <section className="py-24 bg-white relative" id="venues">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+        <section className="section-padding bg-white relative" id="venues">
+            <div className="max-w-7xl mx-auto container-padding">
+                <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-12 gap-4 md:gap-6">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        className="space-y-2"
+                        className="space-y-2 text-center md:text-left w-full md:w-auto"
                     >
-                        <h2 className="text-4xl md:text-5xl font-heading font-bold text-gray-900">Trending Packages</h2>
-                        <p className="text-gray-500 max-w-xl">Curated selection of the most popular packages loved by our community.</p>
+                        <h2 className="text-3xl md:text-5xl font-heading font-bold text-gray-900">Trending Packages</h2>
+                        <p className="text-gray-500 max-w-xl text-sm md:text-base">Curated selection of the most popular packages loved by our community.</p>
                     </motion.div>
-                    <Button variant="outline" className="rounded-full border-2 hover:bg-gray-50">
+                    <Button variant="outline" className="hidden md:flex rounded-full border-2 hover:bg-gray-50">
                         View All Packages <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                 </div>
@@ -69,7 +69,7 @@ export default function FeaturedShowcase() {
                                     alt={pkg.title}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
-                                <div className="absolute top-3 left-3 flex gap-1.5">
+                                <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
                                     {pkg.tags.map((tag, j) => (
                                         <Badge key={j} className="bg-white/90 text-gray-900 backdrop-blur-sm shadow-sm hover:bg-white text-[10px] px-2 py-0.5">{tag}</Badge>
                                     ))}
@@ -98,6 +98,12 @@ export default function FeaturedShowcase() {
                             </div>
                         </motion.div>
                     ))}
+                </div>
+
+                <div className="mt-8 flex justify-center md:hidden">
+                    <Button variant="outline" className="rounded-full border-2 hover:bg-gray-50 w-full">
+                        View All Packages <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
                 </div>
             </div>
         </section>

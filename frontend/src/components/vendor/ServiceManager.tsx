@@ -51,7 +51,7 @@ export default function ServiceManager() {
             // Updating profile with new categories
             await api.patch('/vendors/profile', { serviceCategories: categories });
             toast({ title: "Saved", description: "Service categories updated." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to save categories.", variant: "destructive" });
         } finally {
             setSaving(false);

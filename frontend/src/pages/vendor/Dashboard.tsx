@@ -17,19 +17,19 @@ export default function VendorDashboard() {
 
     return (
         <div className="space-y-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                     <p className="text-muted-foreground">
                         Welcome back, {user?.firstName || 'Vendor'}. Here's what's happening today.
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <Link to="/vendor/bookings">
-                        <Button variant="outline">View Bookings</Button>
+                <div className="flex gap-2 w-full md:w-auto">
+                    <Link to="/vendor/bookings" className="flex-1 md:flex-none">
+                        <Button variant="outline" className="w-full md:w-auto">View Bookings</Button>
                     </Link>
-                    <Link to="/vendor/packages/new">
-                        <Button>
+                    <Link to="/vendor/packages/new" className="flex-1 md:flex-none">
+                        <Button className="w-full md:w-auto">
                             <Plus className="mr-2 h-4 w-4" /> Create Package
                         </Button>
                     </Link>

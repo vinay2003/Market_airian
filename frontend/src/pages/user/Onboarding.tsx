@@ -76,7 +76,7 @@ export default function UserOnboarding() {
                 <CardContent className="space-y-4">
                     {step === 1 && (
                         <>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="firstName">First Name</Label>
                                     <Input id="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="John" />
@@ -100,7 +100,7 @@ export default function UserOnboarding() {
                     {step === 2 && (
                         <>
                             <Label className="text-base">What are you interested in?</Label>
-                            <div className="grid grid-cols-2 gap-3 mt-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                                 {INTEREST_CATEGORIES.map(category => (
                                     <div key={category} className="flex items-center space-x-2 border p-3 rounded-md hover:bg-gray-50">
                                         <Checkbox

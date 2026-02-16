@@ -30,7 +30,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<User | null>(() => {
+        const savedUser = localStorage.getItem('user');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
     useEffect(() => {
@@ -38,10 +41,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Decode JWT here or fetch profile if needed.
             // For now, we simulate persistence if token exists
             // In real app, verify token with /auth/me endpoint
-            const savedUser = localStorage.getItem('user');
-            if (savedUser) {
-                setUser(JSON.parse(savedUser));
-            }
         }
     }, [token]);
 

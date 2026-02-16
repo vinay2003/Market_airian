@@ -66,7 +66,7 @@ export default function VendorProfileEditor() {
                 title: "Profile Updated",
                 description: "Your business details have been saved successfully.",
             });
-        } catch (error) {
+        } catch {
             toast({
                 title: "Error",
                 description: "Failed to update profile. Please try again.",

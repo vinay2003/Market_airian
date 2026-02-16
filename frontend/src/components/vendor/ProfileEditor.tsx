@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 interface Location {
     address: string;
     city: string;
+    state?: string; // Added state
+    country?: string; // Added country
     pincode?: string;
     landmark?: string;
     mapUrl?: string;
@@ -71,6 +73,24 @@ export default function VendorProfileEditor() {
     };
 
     const handleSave = async () => {
+        // Validation
+        if (!formData.businessName.trim()) {
+            toast({ title: "Validation Error", description: "Business Name is required", variant: "destructive" });
+            return;
+        }
+        if (!formData.description.trim()) {
+            toast({ title: "Validation Error", description: "Description is required", variant: "destructive" });
+            return;
+        }
+        if (formData.locations.length > 0) {
+            for (const loc of formData.locations) {
+                if (!loc.address?.trim() || !loc.city?.trim() || !loc.state?.trim()) {
+                    toast({ title: "Validation Error", description: "Address, City and State are required for all locations", variant: "destructive" });
+                    return;
+                }
+            }
+        }
+
         setSaving(true);
         try {
             await api.post('/vendors/profile', {
@@ -228,7 +248,7 @@ export default function VendorProfileEditor() {
                         <CardContent className="space-y-4">
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Business Name</Label>
+                                    <Label>Business Name <span className="text-red-500">*</span></Label>
                                     <Input
                                         value={formData.businessName}
                                         onChange={e => setFormData({ ...formData, businessName: e.target.value })}
@@ -236,7 +256,7 @@ export default function VendorProfileEditor() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Business Type</Label>
+                                    <Label>Business Type <span className="text-red-500">*</span></Label>
                                     <Select
                                         value={formData.businessType}
                                         onValueChange={v => setFormData({ ...formData, businessType: v })}
@@ -252,7 +272,7 @@ export default function VendorProfileEditor() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label>About your Business</Label>
+                                <Label>About your Business <span className="text-red-500">*</span></Label>
                                 <Textarea
                                     className="h-32"
                                     value={formData.description}
@@ -263,7 +283,7 @@ export default function VendorProfileEditor() {
 
                             <div className="grid md:grid-cols-3 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Years in Business</Label>
+                                    <Label>Years in Business <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                     <Input
                                         type="number"
                                         value={formData.yearsInBusiness}
@@ -281,7 +301,7 @@ export default function VendorProfileEditor() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2"><Instagram className="h-4 w-4" /> Instagram URL</Label>
+                                <Label className="flex items-center gap-2"><Instagram className="h-4 w-4" /> Instagram URL <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                 <Input
                                     placeholder="https://instagram.com/..."
                                     value={formData.socialLinks.instagram}
@@ -292,7 +312,7 @@ export default function VendorProfileEditor() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Website URL</Label>
+                                <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Website URL <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                 <Input
                                     placeholder="https://yourwebsite.com"
                                     value={formData.socialLinks.website}
@@ -303,7 +323,7 @@ export default function VendorProfileEditor() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2"><Facebook className="h-4 w-4" /> Facebook URL</Label>
+                                <Label className="flex items-center gap-2"><Facebook className="h-4 w-4" /> Facebook URL <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                 <Input
                                     placeholder="https://facebook.com/..."
                                     value={formData.socialLinks.facebook}
@@ -345,7 +365,7 @@ export default function VendorProfileEditor() {
                                     </div>
                                     <div className="md:col-span-10 grid gap-4">
                                         <div className="space-y-2">
-                                            <Label>Full Address</Label>
+                                            <Label>Full Address <span className="text-red-500">*</span></Label>
                                             <Input
                                                 value={loc.address}
                                                 onChange={e => updateLocation(index, 'address', e.target.value)}
@@ -354,7 +374,27 @@ export default function VendorProfileEditor() {
                                         </div>
                                         <div className="grid md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label>City</Label>
+                                                <Label>Country <span className="text-red-500">*</span></Label>
+                                                <Select value={loc.country} onValueChange={(v) => updateLocation(index, 'country', v)}>
+                                                    <SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="India">India</SelectItem>
+                                                        <SelectItem value="Other">Other</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>State/UT <span className="text-red-500">*</span></Label>
+                                                <Input
+                                                    value={loc.state}
+                                                    onChange={e => updateLocation(index, 'state', e.target.value)}
+                                                    placeholder="State"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>City <span className="text-red-500">*</span></Label>
                                                 <Input
                                                     value={loc.city}
                                                     onChange={e => updateLocation(index, 'city', e.target.value)}
@@ -362,7 +402,7 @@ export default function VendorProfileEditor() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Pincode</Label>
+                                                <Label>Pincode <span className="text-red-500">*</span></Label>
                                                 <Input
                                                     value={loc.pincode || ''}
                                                     onChange={e => updateLocation(index, 'pincode', e.target.value)}
@@ -370,7 +410,7 @@ export default function VendorProfileEditor() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Landmark</Label>
+                                                <Label>Landmark <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                                 <Input
                                                     value={loc.landmark || ''}
                                                     onChange={e => updateLocation(index, 'landmark', e.target.value)}
@@ -406,7 +446,7 @@ export default function VendorProfileEditor() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Terms & Policy Text</Label>
+                                <Label>Terms & Policy Text <span className="text-gray-400 text-xs">(Recommended)</span></Label>
                                 <Textarea
                                     className="min-h-[300px] font-mono text-sm"
                                     value={formData.termsAndConditions}
@@ -417,7 +457,7 @@ export default function VendorProfileEditor() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label>GST Number</Label>
+                                <Label>GST Number <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                 <Input
                                     value={formData.gstNumber}
                                     onChange={e => setFormData({ ...formData, gstNumber: e.target.value })}

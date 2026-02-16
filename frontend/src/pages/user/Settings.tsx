@@ -58,7 +58,7 @@ export default function UserSettings() {
             });
             updateUser(data);
             toast({ title: "Profile Updated", description: "Your account details have been saved." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -75,7 +75,7 @@ export default function UserSettings() {
             await api.patch('/users/me', { password: passwordForm.newPassword });
             toast({ title: "Password Updated", description: "Your password has been changed." });
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update password.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -88,7 +88,7 @@ export default function UserSettings() {
             const { data } = await api.patch('/users/me', { notificationPreferences: notificationForm });
             updateUser(data);
             toast({ title: "Preferences Saved", description: "Notification settings updated." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update preferences.", variant: "destructive" });
         } finally {
             setLoading(false);

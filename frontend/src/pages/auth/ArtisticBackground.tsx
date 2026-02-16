@@ -2,6 +2,37 @@ import { useEffect, useRef } from 'react';
 import { motion, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import gsap from 'gsap';
 
+const AnimatedPath = ({ path, index, smoothMouseX, smoothMouseY }: { path: string, index: number, smoothMouseX: any, smoothMouseY: any }) => {
+    const x = useTransform(smoothMouseX, [0, 1], [-30 * (index + 1), 30 * (index + 1)]);
+    const y = useTransform(smoothMouseY, [0, 1], [-30 * (index + 1), 30 * (index + 1)]);
+    const rotate = useTransform(smoothMouseX, [0, 1], [-5, 5]);
+
+    return (
+        <motion.path
+            d={path}
+            fill="none"
+            stroke="url(#grad1)"
+            strokeWidth="1.5"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 0.8 }}
+            transition={{
+                duration: 8,
+                ease: "easeInOut",
+                delay: index * 0.5,
+                repeat: Infinity,
+                repeatType: "reverse",
+                repeatDelay: 0.5
+            }}
+            style={{
+                scale: 1.2,
+                x,
+                y,
+                rotate,
+            }}
+        />
+    );
+};
+
 export const ArtisticBackground = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const mouseX = useMotionValue(0);
@@ -62,29 +93,7 @@ export const ArtisticBackground = () => {
                 </defs>
 
                 {paths.map((path, i) => (
-                    <motion.path
-                        key={i}
-                        d={path}
-                        fill="none"
-                        stroke="url(#grad1)"
-                        strokeWidth="1.5"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 0.8 }}
-                        transition={{
-                            duration: 8,
-                            ease: "easeInOut",
-                            delay: i * 0.5,
-                            repeat: Infinity,
-                            repeatType: "reverse",
-                            repeatDelay: 0.5
-                        }}
-                        style={{
-                            scale: 1.2,
-                            x: useTransform(smoothMouseX, [0, 1], [-30 * (i + 1), 30 * (i + 1)]),
-                            y: useTransform(smoothMouseY, [0, 1], [-30 * (i + 1), 30 * (i + 1)]),
-                            rotate: useTransform(smoothMouseX, [0, 1], [-5, 5]),
-                        }}
-                    />
+                    <AnimatedPath key={i} path={path} index={i} smoothMouseX={smoothMouseX} smoothMouseY={smoothMouseY} />
                 ))}
 
                 {/* Floating Circles */}

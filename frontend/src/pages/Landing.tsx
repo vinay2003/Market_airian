@@ -21,8 +21,8 @@ const TypewriterEffect = ({ words }: { words: string[] }) => {
         if (index === words.length) return;
 
         if (subIndex === words[index].length + 1 && !reverse) {
-            setReverse(true);
-            return;
+            const timeout = setTimeout(() => setReverse(true), 200);
+            return () => clearTimeout(timeout);
         }
 
         if (subIndex === 0 && reverse) {
@@ -215,29 +215,89 @@ export default function Landing() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.8 }}
-                        className="max-w-3xl mx-auto bg-white/10 backdrop-blur-xl p-3 md:p-2 rounded-3xl md:rounded-full border border-white/40 shadow-2xl flex flex-col md:flex-row gap-3 md:gap-2 ring-1 ring-black/5"
+                        transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
+                        className="
+                            w-full max-w-3xl mx-auto
+                            bg-white/10 backdrop-blur-2xl
+                            p-3 md:p-2
+                            rounded-[2rem] md:rounded-full
+                            border border-white/30
+                            shadow-[0_8px_30px_rgba(0,0,0,0.25)]
+                            flex flex-col md:flex-row
+                            gap-3 md:gap-0
+                            ring-1 ring-white/20
+                            relative z-20
+                        "
                     >
-                        <div className="flex-1 flex items-center px-4 h-14 bg-white/5 md:bg-transparent rounded-2xl md:rounded-none border border-white/30 md:border-none focus-within:bg-white/10 transition-colors">
-                            <Search className="text-gray-200 w-5 h-5 mr-3 shrink-0" />
+                        {/* Service Input */}
+                        <div className="
+                            flex-1 flex items-center px-4 h-14 md:h-16
+                            bg-black/20 md:bg-transparent
+                            rounded-2xl md:rounded-l-full md:rounded-r-none
+                            border border-white/10 md:border-none
+                            transition-all duration-300
+                            focus-within:bg-black/40 md:focus-within:bg-white/10
+                        ">
+                            <Search className="text-white/70 w-5 h-5 mr-3 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="Service (e.g. Photography)"
-                                className="bg-transparent border-none outline-none text-white placeholder:text-gray-300 w-full h-full text-base font-medium"
+                                className="
+                                    bg-transparent border-none outline-none
+                                    text-white placeholder:text-white/60
+                                    w-full h-full text-base font-medium
+                                "
                             />
                         </div>
-                        <div className="flex-1 flex items-center px-4 h-14 md:border-l md:border-white/30 bg-white/5 md:bg-transparent rounded-2xl md:rounded-none border border-white/30 md:border-none focus-within:bg-white/10 transition-colors">
-                            <MapPin className="text-gray-200 w-5 h-5 mr-3 shrink-0" />
+
+                        {/* Divider for Desktop */}
+                        <div className="hidden md:block w-px h-10 bg-white/20 self-center mx-2" />
+
+                        {/* City Input */}
+                        <div className="
+                            flex-1 flex items-center px-4 h-14 md:h-16
+                            bg-black/20 md:bg-transparent
+                            rounded-2xl md:rounded-none
+                            border border-white/10 md:border-none
+                            transition-all duration-300
+                            focus-within:bg-black/40 md:focus-within:bg-white/10
+                        ">
+                            <MapPin className="text-white/70 w-5 h-5 mr-3 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="City (e.g. Mumbai)"
-                                className="bg-transparent border-none outline-none text-white placeholder:text-gray-300 w-full h-full text-base font-medium"
+                                className="
+                                    bg-transparent border-none outline-none
+                                    text-white placeholder:text-white/60
+                                    w-full h-full text-base font-medium
+                                "
                             />
                         </div>
-                        <Button size="lg" className="rounded-2xl md:rounded-full w-full md:w-auto px-8 h-14 text-lg font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-amber-500/25 transition-all duration-300 border border-amber-400/50">
-                            Search
-                        </Button>
+
+                        {/* Search Button */}
+                        <div className="p-1">
+                            <Button
+                                size="lg"
+                                className="
+                                    w-full md:w-auto
+                                    h-14 md:h-14
+                                    px-8
+                                    rounded-xl md:rounded-full
+                                    text-lg font-bold tracking-wide
+                                    text-white
+                                    bg-gradient-to-r from-amber-500 to-orange-600
+                                    hover:from-amber-600 hover:to-orange-700
+                                    shadow-lg hover:shadow-amber-500/40
+                                    active:scale-95
+                                    transition-all duration-300
+                                    border border-white/10
+                                "
+                            >
+                                Search
+                            </Button>
+                        </div>
                     </motion.div>
+
 
                     {/* Quick Tags */}
                     <motion.div

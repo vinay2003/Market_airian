@@ -25,26 +25,26 @@ export default function UserDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <header className="bg-white border-b px-8 py-4 flex justify-between items-center sticky top-0 z-10">
+            <header className="bg-white border-b px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center gap-2">
                     <div className="bg-black text-white h-8 w-8 rounded flex items-center justify-center font-bold">M</div>
                     <span className="font-bold text-xl">MarketFly</span>
                 </div>
                 <div className="flex gap-4">
-                    <Button variant="ghost" onClick={logout}>Logout</Button>
+                    <Button variant="ghost" onClick={logout} size="sm">Logout</Button>
                 </div>
             </header>
 
-            <main className="flex-1 max-w-6xl mx-auto w-full p-8 space-y-8">
-                <div className="flex justify-between items-center">
+            <main className="flex-1 max-w-6xl mx-auto w-full p-4 md:p-8 space-y-6 md:space-y-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Hello, {(user as any)?.firstName || 'User'}!</h1>
-                        <p className="text-gray-500">Find the perfect vendors for your next event.</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Hello, {(user as any)?.firstName || 'User'}!</h1>
+                        <p className="text-gray-500 text-sm md:text-base">Find the perfect vendors for your next event.</p>
                     </div>
                 </div>
 
                 <Tabs defaultValue="recommended" className="w-full">
-                    <TabsList>
+                    <TabsList className="w-full justify-start overflow-x-auto">
                         <TabsTrigger value="recommended">Recommended</TabsTrigger>
                         <TabsTrigger value="events">My Events</TabsTrigger>
                         <TabsTrigger value="saved">Saved Vendors</TabsTrigger>
