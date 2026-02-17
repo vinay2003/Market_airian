@@ -50,87 +50,99 @@ FILE: src/App.css
 FILE: src/App.tsx
 ================================================================================
 
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/600.css';
 import '@fontsource/outfit/700.css';
 import '@fontsource/outfit/500.css';
 import { AuthProvider } from '@/context/AuthContext';
+import { Loader2 } from 'lucide-react';
+
+// Eagerly load critical pages
 import Landing from '@/pages/Landing';
 import Login from '@/pages/auth/Login';
 
-// Vendor Pages
-import VendorOnboarding from '@/pages/vendor/Onboarding';
-import VendorDashboard from '@/pages/vendor/Dashboard';
-import VendorPublicProfile from '@/pages/public/VendorProfile';
-import BrowseVendors from '@/pages/public/BrowseVendors';
-import VendorProfileEditor from '@/pages/vendor/ProfileEditor';
-import PackageManager from '@/pages/vendor/PackageManager';
-import GalleryManager from '@/pages/vendor/GalleryManager';
-import BookingsManager from '@/pages/vendor/BookingsManager';
-import VendorSettings from '@/pages/vendor/Settings';
+// Lazy Load Vendor Pages
+const VendorOnboarding = lazy(() => import('@/pages/vendor/Onboarding'));
+const VendorDashboard = lazy(() => import('@/pages/vendor/Dashboard'));
+const VendorPublicProfile = lazy(() => import('@/pages/public/VendorProfile'));
+const BrowseVendors = lazy(() => import('@/pages/public/BrowseVendors'));
+const VendorProfileEditor = lazy(() => import('@/pages/vendor/ProfileEditor'));
+const PackageManager = lazy(() => import('@/pages/vendor/PackageManager'));
+const GalleryManager = lazy(() => import('@/pages/vendor/GalleryManager'));
+const BookingsManager = lazy(() => import('@/pages/vendor/BookingsManager'));
+const VendorSettings = lazy(() => import('@/pages/vendor/Settings'));
 
-// User Pages
-import UserOnboarding from '@/pages/user/Onboarding';
-import UserDashboard from '@/pages/user/Dashboard';
-import UserBookings from '@/pages/user/Bookings';
-import UserSettings from '@/pages/user/Settings';
+// Lazy Load User Pages
+const UserOnboarding = lazy(() => import('@/pages/user/Onboarding'));
+const UserDashboard = lazy(() => import('@/pages/user/Dashboard'));
+const UserBookings = lazy(() => import('@/pages/user/Bookings'));
+const UserSettings = lazy(() => import('@/pages/user/Settings'));
 
 // Layout & Components
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 
+const PageLoader = () => (
+  <div className="h-screen w-full flex items-center justify-center bg-background">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          {/* Public Routes */}
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<Landing />} />
-            <Route path="/vendors" element={<BrowseVendors />} />
-            <Route path="/vendor/:id" element={<VendorPublicProfile />} />
-          </Route>
-
-          {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/onboarding/user" element={<UserOnboarding />} />
-          <Route path="/onboarding/vendor" element={<VendorOnboarding />} />
-
-          {/* Protected Vendor Dashboard */}
-          <Route element={<ProtectedRoute allowedRoles={['vendor']} />}>
-            <Route element={<DashboardLayout />}>
-              <Route path="/vendor/dashboard" element={<VendorDashboard />} />
-              <Route path="/vendor/bookings" element={<BookingsManager />} />
-              <Route path="/vendor/packages" element={<PackageManager />} />
-              <Route path="/vendor/gallery" element={<GalleryManager />} />
-              <Route path="/vendor/profile" element={<VendorProfileEditor />} />
-              <Route path="/vendor/settings" element={<VendorSettings />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Public Routes */}
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<Landing />} />
+              <Route path="/vendors" element={<BrowseVendors />} />
+              <Route path="/vendor/:id" element={<VendorPublicProfile />} />
             </Route>
-          </Route>
 
-          {/* Protected User Dashboard */}
-          <Route element={<ProtectedRoute allowedRoles={['user']} />}>
-            <Route element={<DashboardLayout />}>
-              <Route path="/user/dashboard" element={<UserDashboard />} />
-              <Route path="/user/bookings" element={<UserBookings />} />
-              <Route path="/user/favorites" element={<div>Favorites (Coming Soon)</div>} />
-              <Route path="/user/profile" element={<UserSettings />} />
-              <Route path="/user/settings" element={<UserSettings />} />
+            {/* Auth Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/onboarding/user" element={<UserOnboarding />} />
+            <Route path="/onboarding/vendor" element={<VendorOnboarding />} />
+
+            {/* Protected Vendor Dashboard */}
+            <Route element={<ProtectedRoute allowedRoles={['vendor']} />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+                <Route path="/vendor/bookings" element={<BookingsManager />} />
+                <Route path="/vendor/packages" element={<PackageManager />} />
+                <Route path="/vendor/gallery" element={<GalleryManager />} />
+                <Route path="/vendor/profile" element={<VendorProfileEditor />} />
+                <Route path="/vendor/settings" element={<VendorSettings />} />
+              </Route>
             </Route>
-          </Route>
 
-          {/* Catch all redirects */}
-          <Route path="/vendor" element={<Navigate to="/vendor/dashboard" replace />} />
-          <Route path="/user" element={<Navigate to="/user/dashboard" replace />} />
+            {/* Protected User Dashboard */}
+            <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+              <Route element={<DashboardLayout />}>
+                <Route path="/user/dashboard" element={<UserDashboard />} />
+                <Route path="/user/bookings" element={<UserBookings />} />
+                <Route path="/user/favorites" element={<div>Favorites (Coming Soon)</div>} />
+                <Route path="/user/profile" element={<UserSettings />} />
+                <Route path="/user/settings" element={<UserSettings />} />
+              </Route>
+            </Route>
 
-          {/* Legacy Onboarding Redirects */}
-          <Route path="/vendor/onboarding" element={<Navigate to="/onboarding/vendor" replace />} />
-          <Route path="/user/onboarding" element={<Navigate to="/onboarding/user" replace />} />
-          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+            {/* Catch all redirects */}
+            <Route path="/vendor" element={<Navigate to="/vendor/dashboard" replace />} />
+            <Route path="/user" element={<Navigate to="/user/dashboard" replace />} />
 
-        </Routes>
+            {/* Legacy Onboarding Redirects */}
+            <Route path="/vendor/onboarding" element={<Navigate to="/onboarding/vendor" replace />} />
+            <Route path="/user/onboarding" element={<Navigate to="/onboarding/user" replace />} />
+            <Route path="/dashboard" element={<Navigate to="/" replace />} />
+
+          </Routes>
+        </Suspense>
       </AuthProvider>
     </BrowserRouter>
   );
@@ -158,21 +170,21 @@ const categories = [
 
 export default function Categories() {
     return (
-        <section className="py-24 bg-secondary/30 relative" id="services">
+        <section className="section-padding bg-secondary/30 relative" id="services">
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
 
-            <div className="max-w-7xl mx-auto px-6 relative z-10">
+            <div className="max-w-7xl mx-auto container-padding relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="text-center mb-16 space-y-4"
+                    className="text-center mb-10 md:mb-16 space-y-4"
                 >
-                    <h2 className="text-4xl md:text-5xl font-heading font-bold text-gray-900">Curated Categories</h2>
-                    <p className="text-gray-500 max-w-2xl mx-auto text-lg">Everything you need to plan the perfect celebration, organized for your convenience.</p>
+                    <h2 className="text-3xl md:text-5xl font-heading font-bold text-gray-900">Curated Categories</h2>
+                    <p className="text-gray-500 max-w-2xl mx-auto text-sm md:text-lg">Everything you need to plan the perfect celebration, organized for your convenience.</p>
                 </motion.div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
                     {categories.map((cat, i) => (
                         <motion.div
                             key={i}
@@ -183,12 +195,12 @@ export default function Categories() {
                             whileHover={{ y: -5, scale: 1.02 }}
                             className="h-full"
                         >
-                            <Card className="h-full border-0 shadow-sm hover:shadow-xl transition-all duration-300 p-6 flex flex-col items-center text-center bg-white/60 backdrop-blur-sm cursor-pointer group">
-                                <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${cat.color}`}>
-                                    <cat.icon className="h-7 w-7" />
+                            <Card className="h-full border-0 shadow-sm hover:shadow-xl transition-all duration-300 p-4 md:p-6 flex flex-col items-center text-center bg-white/60 backdrop-blur-sm cursor-pointer group">
+                                <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${cat.color}`}>
+                                    <cat.icon className="h-6 w-6 md:h-7 md:w-7" />
                                 </div>
-                                <h3 className="font-heading font-bold text-lg mb-1 group-hover:text-primary transition-colors">{cat.name}</h3>
-                                <p className="text-xs text-gray-500 line-clamp-2">{cat.desc}</p>
+                                <h3 className="font-heading font-bold text-base md:text-lg mb-1 group-hover:text-primary transition-colors">{cat.name}</h3>
+                                <p className="text-[10px] md:text-xs text-gray-500 line-clamp-2">{cat.desc}</p>
                             </Card>
                         </motion.div>
                     ))}
@@ -240,19 +252,19 @@ const packages = [
 
 export default function FeaturedShowcase() {
     return (
-        <section className="py-24 bg-white relative" id="venues">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+        <section className="section-padding bg-white relative" id="venues">
+            <div className="max-w-7xl mx-auto container-padding">
+                <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-12 gap-4 md:gap-6">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        className="space-y-2"
+                        className="space-y-2 text-center md:text-left w-full md:w-auto"
                     >
-                        <h2 className="text-4xl md:text-5xl font-heading font-bold text-gray-900">Trending Packages</h2>
-                        <p className="text-gray-500 max-w-xl">Curated selection of the most popular packages loved by our community.</p>
+                        <h2 className="text-3xl md:text-5xl font-heading font-bold text-gray-900">Trending Packages</h2>
+                        <p className="text-gray-500 max-w-xl text-sm md:text-base">Curated selection of the most popular packages loved by our community.</p>
                     </motion.div>
-                    <Button variant="outline" className="rounded-full border-2 hover:bg-gray-50">
+                    <Button variant="outline" className="hidden md:flex rounded-full border-2 hover:bg-gray-50">
                         View All Packages <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                 </div>
@@ -274,7 +286,7 @@ export default function FeaturedShowcase() {
                                     alt={pkg.title}
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
-                                <div className="absolute top-3 left-3 flex gap-1.5">
+                                <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
                                     {pkg.tags.map((tag, j) => (
                                         <Badge key={j} className="bg-white/90 text-gray-900 backdrop-blur-sm shadow-sm hover:bg-white text-[10px] px-2 py-0.5">{tag}</Badge>
                                     ))}
@@ -304,6 +316,12 @@ export default function FeaturedShowcase() {
                         </motion.div>
                     ))}
                 </div>
+
+                <div className="mt-8 flex justify-center md:hidden">
+                    <Button variant="outline" className="rounded-full border-2 hover:bg-gray-50 w-full">
+                        View All Packages <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </div>
             </div>
         </section>
     );
@@ -321,15 +339,15 @@ import { Input } from '@/components/ui/input';
 
 export default function Footer() {
     return (
-        <footer className="bg-gray-900 text-white pt-24 pb-12">
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="grid md:grid-cols-4 gap-12 mb-16">
+        <footer className="bg-gray-900 text-white pt-16 pb-8 md:pt-24 md:pb-12">
+            <div className="max-w-7xl mx-auto container-padding">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-16">
                     <div className="space-y-6">
                         <div className="flex items-center gap-2">
                             <div className="bg-white text-gray-900 h-8 w-8 rounded-lg flex items-center justify-center font-bold font-heading">M</div>
                             <span className="font-heading font-bold text-xl tracking-tight">MarketFly</span>
                         </div>
-                        <p className="text-gray-400 leading-relaxed">
+                        <p className="text-gray-400 leading-relaxed text-sm">
                             Elevating celebrations with curated vendors and seamless planning tools.
                         </p>
                         <div className="flex gap-4">
@@ -343,7 +361,7 @@ export default function Footer() {
 
                     <div>
                         <h4 className="font-heading font-bold text-lg mb-6">Company</h4>
-                        <ul className="space-y-4 text-gray-400">
+                        <ul className="space-y-4 text-gray-400 text-sm">
                             <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
                             <li><Link to="/careers" className="hover:text-primary transition-colors">Careers</Link></li>
                             <li><Link to="/blog" className="hover:text-primary transition-colors">Blog</Link></li>
@@ -353,7 +371,7 @@ export default function Footer() {
 
                     <div>
                         <h4 className="font-heading font-bold text-lg mb-6">Support</h4>
-                        <ul className="space-y-4 text-gray-400">
+                        <ul className="space-y-4 text-gray-400 text-sm">
                             <li><Link to="/help" className="hover:text-primary transition-colors">Help Center</Link></li>
                             <li><Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
                             <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
@@ -361,9 +379,9 @@ export default function Footer() {
                         </ul>
                     </div>
 
-                    <div>
+                    <div className="sm:col-span-2 md:col-span-1">
                         <h4 className="font-heading font-bold text-lg mb-6">Stay Updated</h4>
-                        <p className="text-gray-400 mb-4">Subscribe to our newsletter for the latest trends.</p>
+                        <p className="text-gray-400 mb-4 text-sm">Subscribe to our newsletter for the latest trends.</p>
                         <div className="flex gap-2">
                             <Input placeholder="Email address" className="bg-white/10 border-white/10 text-white placeholder:text-gray-500 focus:ring-primary" />
                             <Button className="bg-primary hover:bg-primary-600 text-white">
@@ -373,7 +391,7 @@ export default function Footer() {
                     </div>
                 </div>
 
-                <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+                <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500 text-center md:text-left">
                     <p>&copy; 2026 MarketFly Inc. All rights reserved.</p>
                     <p className="flex items-center gap-1">
                         Made with <Heart className="h-3 w-3 text-red-500 fill-red-500" /> in India
@@ -448,30 +466,30 @@ import { Link } from 'react-router-dom';
 
 export default function Hero() {
     return (
-        <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden bg-background">
+        <section className="relative min-h-[90vh] flex items-center pt-24 pb-16 md:pt-32 overflow-hidden bg-background">
             {/* Background Decor */}
             <div className="absolute inset-0 z-0 pointer-events-none">
-                <div className="absolute top-0 right-0 w-[50vw] h-full bg-secondary/30 blur-[120px] rounded-l-full translate-x-1/4 animate-float" />
-                <div className="absolute bottom-0 left-0 w-[40vw] h-[60vh] bg-primary/10 blur-[100px] rounded-r-full -translate-x-1/4 animate-float" style={{ animationDelay: '2s' }} />
+                <div className="absolute top-0 right-0 w-[50vw] h-full bg-secondary/30 blur-[80px] md:blur-[120px] rounded-l-full translate-x-1/4 animate-float" />
+                <div className="absolute bottom-0 left-0 w-[40vw] h-[60vh] bg-primary/10 blur-[60px] md:blur-[100px] rounded-r-full -translate-x-1/4 animate-float" style={{ animationDelay: '2s' }} />
 
-                {/* Floating Elements (replace with actual images later) */}
+                {/* Floating Elements */}
                 <motion.div
                     animate={{ y: [0, -20, 0] }}
                     transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute top-1/4 right-[10%] w-24 h-24 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-xl"
+                    className="absolute top-1/4 right-[10%] w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-xl"
                 />
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 w-full relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 w-full relative z-10 grid lg:grid-cols-2 gap-12 items-center">
                 {/* Text Content */}
-                <div className="space-y-8 text-center lg:text-left">
+                <div className="space-y-6 md:space-y-8 text-center lg:text-left">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-gray-100 text-sm font-medium text-gray-600 mb-4"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white shadow-sm border border-gray-100 text-xs md:text-sm font-medium text-gray-600 mb-2 md:mb-4 mx-auto lg:mx-0"
                     >
-                        <Star className="h-4 w-4 text-primary fill-primary" />
+                        <Star className="h-3 w-3 md:h-4 md:w-4 text-primary fill-primary" />
                         <span>The Premier Marketplace for Events</span>
                     </motion.div>
 
@@ -479,7 +497,7 @@ export default function Hero() {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        className="text-6xl md:text-7xl lg:text-8xl font-heading font-bold text-foreground leading-[1.1] tracking-tight"
+                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-heading font-bold text-foreground leading-[1.1] tracking-tight"
                     >
                         Celebrate <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-600 italic font-serif">
@@ -491,7 +509,7 @@ export default function Hero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
-                        className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed"
+                        className="text-base md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed px-2 md:px-0"
                     >
                         From intimate weddings to grand galas, connect with curated vendors who bring your vision to life with elegance and ease.
                     </motion.p>
@@ -500,15 +518,15 @@ export default function Hero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.6 }}
-                        className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+                        className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center lg:justify-start w-full sm:w-auto px-4 sm:px-0"
                     >
-                        <Link to="/login">
-                            <Button size="lg" className="rounded-full h-14 px-8 text-lg bg-primary hover:bg-primary-600 text-white shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95">
+                        <Link to="/login" className="w-full sm:w-auto">
+                            <Button size="lg" className="w-full sm:w-auto rounded-full h-12 md:h-14 px-8 text-lg bg-primary hover:bg-primary-600 text-white shadow-lg shadow-primary/30 transition-all hover:scale-105 active:scale-95">
                                 Find Vendors
                             </Button>
                         </Link>
-                        <Link to="/vendor/onboarding">
-                            <Button size="lg" variant="outline" className="rounded-full h-14 px-8 text-lg border-2 hover:bg-secondary/50 transition-all">
+                        <Link to="/vendor/onboarding" className="w-full sm:w-auto">
+                            <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full h-12 md:h-14 px-8 text-lg border-2 hover:bg-secondary/50 transition-all">
                                 For Vendors <ArrowRight className="ml-2 h-5 w-5" />
                             </Button>
                         </Link>
@@ -519,11 +537,11 @@ export default function Hero() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 1, delay: 0.8 }}
-                        className="pt-8 flex items-center justify-center lg:justify-start gap-8 text-sm text-gray-500"
+                        className="pt-6 md:pt-8 flex items-center justify-center lg:justify-start gap-4 md:gap-8 text-sm text-gray-500"
                     >
                         <div className="flex -space-x-3">
                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200" />
+                                <div key={i} className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white bg-gray-200" />
                             ))}
                         </div>
                         <p>Trusted by <span className="font-bold text-gray-900">15,000+</span> planners</p>
@@ -535,7 +553,7 @@ export default function Hero() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1, delay: 0.4 }}
-                    className="relative hidden lg:block h-[700px]"
+                    className="relative hidden lg:block h-[600px] xl:h-[700px]"
                 >
                     <div className="absolute top-10 right-10 w-full h-full bg-secondary/50 rounded-[3rem] -z-10" />
                     <img
@@ -568,84 +586,171 @@ export default function Hero() {
 FILE: src/components/home/Navbar.tsx
 ================================================================================
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
+import { Menu, X, ChevronRight, User, Building2 } from 'lucide-react';
 
 export default function Navbar() {
-    const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
     const { scrollY } = useScroll();
+    const location = useLocation();
 
     useMotionValueEvent(scrollY, "change", (latest) => {
-        setScrolled(latest > 50);
+        setScrolled(latest > 20);
     });
 
+    // Close mobile menu on route change
+    useEffect(() => {
+        setMobileMenuOpen(false);
+    }, [location]);
+
+    const navLinks = [
+        { name: 'Venues', href: '#venues' },
+        { name: 'Services', href: '#services' },
+        { name: 'Gallery', href: '#gallery' },
+        { name: 'About', href: '#about' },
+    ];
+
     return (
-        <motion.nav
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.5 }}
-            className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-4 border-b border-gray-100' : 'bg-transparent py-6'}`}
-        >
-            <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-                <Link to="/" className="flex items-center gap-2 group">
-                    <div className="bg-primary text-white h-10 w-10 rounded-xl flex items-center justify-center font-bold font-heading text-xl shadow-lg shadow-primary/25 transition-transform group-hover:scale-105 duration-300">M</div>
-                    <span className={`font-heading font-extrabold text-2xl tracking-tight transition-colors ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>MarketFly</span>
-                </Link>
-
-                {/* Desktop Nav */}
-                <div className="hidden md:flex items-center gap-8">
-                    {['Venues', 'Services', 'Gallery', 'About'].map((item) => (
-                        <a key={item} href={`#${item.toLowerCase()}`} className="text-sm font-bold text-gray-700 hover:text-primary transition-colors uppercase tracking-wide">
-                            {item}
-                        </a>
-                    ))}
-                </div>
-
-                <div className="hidden md:flex items-center gap-4">
-                    <Link to="/login">
-                        <Button variant="ghost" className="hover:bg-primary/5 hover:text-primary font-bold text-gray-700">Log in</Button>
+        <>
+            <motion.nav
+                initial={{ y: -100 }}
+                animate={{ y: 0 }}
+                transition={{ duration: 0.5, ease: 'circOut' }}
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+                        ? 'bg-white/90 backdrop-blur-xl border-b border-gray-200/50 shadow-sm py-3'
+                        : 'bg-transparent py-5'
+                    }`}
+            >
+                <div className="max-w-7xl mx-auto px-4 md:px-6 flex items-center justify-between">
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-2 group relative z-50">
+                        <div className="bg-gradient-to-tr from-primary to-indigo-600 text-white h-10 w-10 rounded-xl flex items-center justify-center font-bold font-heading text-xl shadow-lg shadow-primary/25 transition-transform group-hover:scale-105 duration-300">
+                            M
+                        </div>
+                        <span className={`font-heading font-extrabold text-2xl tracking-tight transition-colors duration-300 ${scrolled ? 'text-gray-900' : 'text-white'}`}>
+                            MarketFly
+                        </span>
                     </Link>
-                    <Link to="/vendor/onboarding">
-                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-lg shadow-indigo-600/25 rounded-full px-6 transition-all hover:scale-105 active:scale-95 duration-200">
-                            List Your Business
-                        </Button>
-                    </Link>
-                </div>
 
-                {/* Mobile Menu Toggle */}
-                <button className="md:hidden p-2 text-gray-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-                    {mobileMenuOpen ? <X /> : <Menu />}
-                </button>
-            </div>
+                    {/* Desktop Nav - Hidden on Tablet/Mobile */}
+                    <div className="hidden lg:flex items-center gap-1 bg-white/10 backdrop-blur-md px-2 py-1.5 rounded-full border border-white/10 shadow-sm">
+                        {navLinks.map((item) => (
+                            <a
+                                key={item.name}
+                                href={item.href}
+                                className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-200 hover:bg-white/10 ${scrolled ? 'text-gray-600 hover:text-primary' : 'text-gray-200 hover:text-white'
+                                    }`}
+                            >
+                                {item.name}
+                            </a>
+                        ))}
+                    </div>
 
-            {/* Mobile Menu */}
-            {mobileMenuOpen && (
-                <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="md:hidden bg-white border-b border-gray-100 px-6 py-4 space-y-4 shadow-xl"
-                >
-                    {['Venues', 'Services', 'Gallery', 'About'].map((item) => (
-                        <a key={item} href={`#${item.toLowerCase()}`} className="block text-sm font-bold text-gray-700 py-2" onClick={() => setMobileMenuOpen(false)}>
-                            {item}
-                        </a>
-                    ))}
-                    <div className="pt-4 flex flex-col gap-3">
-                        <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                            <Button variant="outline" className="w-full justify-center font-bold">Log in</Button>
+                    {/* Desktop/Tablet Actions */}
+                    <div className="hidden md:flex items-center gap-3">
+                        <Link to="/login">
+                            <Button
+                                variant="ghost"
+                                className={`font-bold transition-colors ${scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'
+                                    }`}
+                            >
+                                Log in
+                            </Button>
                         </Link>
-                        <Link to="/vendor/onboarding" onClick={() => setMobileMenuOpen(false)}>
-                            <Button className="w-full justify-center bg-indigo-600 hover:bg-indigo-700 text-white font-bold">List Your Business</Button>
+                        <Link to="/vendor/onboarding">
+                            <Button className="bg-white text-indigo-900 hover:bg-gray-50 font-bold shadow-lg shadow-indigo-900/10 rounded-full px-6 transition-all hover:scale-105 active:scale-95 duration-200 border border-gray-100">
+                                List Your Business
+                            </Button>
                         </Link>
                     </div>
-                </motion.div>
-            )}
-        </motion.nav>
+
+                    {/* Mobile Menu Toggle - Visible on Mobile and Tablet (if needed) */}
+                    <div className="flex items-center gap-4 lg:hidden">
+                        {/* Show 'List Business' icon on mobile top bar for quick access? Optional, usually crowded. 
+                            Let's keep it clean but ensure the menu toggle is prominent. 
+                        */}
+                        <button
+                            className={`p-2 rounded-full transition-colors relative z-50 ${mobileMenuOpen ? 'text-gray-900 bg-gray-100' : (scrolled ? 'text-gray-900' : 'text-white')
+                                }`}
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            aria-label="Toggle menu"
+                        >
+                            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                        </button>
+                    </div>
+                </div>
+            </motion.nav>
+
+            {/* Mobile/Tablet Menu Overlay */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                            onClick={() => setMobileMenuOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                            className="fixed top-0 right-0 h-full w-[85%] max-w-[320px] bg-white z-50 shadow-2xl flex flex-col lg:hidden"
+                        >
+                            <div className="p-6 pt-24 flex-1 overflow-y-auto">
+                                <div className="flex flex-col gap-1 mb-8">
+                                    {navLinks.map((item, i) => (
+                                        <motion.a
+                                            key={item.name}
+                                            href={item.href}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.1 + i * 0.05 }}
+                                            className="text-xl font-bold text-gray-800 py-4 border-b border-gray-50 flex items-center justify-between group"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                        >
+                                            {item.name}
+                                            <ChevronRight className="text-gray-300 w-5 h-5 group-hover:text-primary transition-colors" />
+                                        </motion.a>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-4">
+                                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                                        <Button variant="outline" className="w-full justify-start font-bold h-14 text-base rounded-xl border-gray-200 hover:bg-gray-50 hover:text-primary pl-4">
+                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3 text-gray-600">
+                                                <User className="h-4 w-4" />
+                                            </div>
+                                            Log in
+                                        </Button>
+                                    </Link>
+                                    <Link to="/vendor/onboarding" onClick={() => setMobileMenuOpen(false)}>
+                                        <Button className="w-full justify-start bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-14 text-base rounded-xl shadow-lg shadow-indigo-200 pl-4">
+                                            <div className="w-8 h-8 rounded-full bg-indigo-500/50 flex items-center justify-center mr-3 text-white">
+                                                <Building2 className="h-4 w-4" />
+                                            </div>
+                                            List Your Business
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </div>
+
+                            <div className="p-6 bg-gray-50 border-t border-gray-100">
+                                <p className="text-xs text-center text-gray-400 font-medium">
+                                    © 2024 MarketFly Inc.
+                                </p>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </>
     );
 }
 
@@ -680,16 +785,16 @@ const testimonials = [
 
 export default function Testimonials() {
     return (
-        <section className="py-24 bg-secondary/20 relative overflow-hidden" id="testimonials">
+        <section className="section-padding bg-secondary/20 relative overflow-hidden" id="testimonials">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/diamond-upholstery.png')] opacity-5 pointer-events-none" />
 
-            <div className="max-w-7xl mx-auto px-6 relative z-10">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-heading font-bold text-gray-900 mb-4">Love Stories</h2>
-                    <p className="text-gray-500 max-w-xl mx-auto">Hear from the people who made their dreams come true with us.</p>
+            <div className="max-w-7xl mx-auto container-padding relative z-10">
+                <div className="text-center mb-10 md:mb-16">
+                    <h2 className="text-3xl md:text-5xl font-heading font-bold text-gray-900 mb-4">Love Stories</h2>
+                    <p className="text-gray-500 max-w-xl mx-auto text-sm md:text-base">Hear from the people who made their dreams come true with us.</p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-3 gap-6 md:gap-8">
                     {testimonials.map((t, i) => (
                         <motion.div
                             key={i}
@@ -697,20 +802,20 @@ export default function Testimonials() {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.2 }}
-                            className="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-sm border border-white/40 flex flex-col relative"
+                            className="bg-white/80 backdrop-blur-md p-6 md:p-8 rounded-3xl shadow-sm border border-white/40 flex flex-col relative"
                         >
-                            <Quote className="h-10 w-10 text-primary/20 absolute top-6 right-6" />
+                            <Quote className="h-8 w-8 md:h-10 md:w-10 text-primary/20 absolute top-6 right-6" />
 
                             <div className="flex gap-1 text-primary mb-6">
-                                {[1, 2, 3, 4, 5].map(star => <Star key={star} className="h-4 w-4 fill-current" />)}
+                                {[1, 2, 3, 4, 5].map(star => <Star key={star} className="h-3 w-3 md:h-4 md:w-4 fill-current" />)}
                             </div>
 
-                            <p className="text-gray-600 italic mb-8 flex-grow leading-relaxed">"{t.text}"</p>
+                            <p className="text-gray-600 italic mb-8 flex-grow leading-relaxed text-sm md:text-base">"{t.text}"</p>
 
                             <div className="flex items-center gap-4">
-                                <img src={t.image} alt={t.name} className="h-12 w-12 rounded-full object-cover border-2 border-primary/20" />
+                                <img src={t.image} alt={t.name} className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border-2 border-primary/20" />
                                 <div>
-                                    <div className="font-bold text-gray-900">{t.name}</div>
+                                    <div className="font-bold text-gray-900 text-sm md:text-base">{t.name}</div>
                                     <div className="text-xs text-primary font-medium">{t.role}</div>
                                 </div>
                             </div>
@@ -743,7 +848,7 @@ export function DashboardLayout() {
             {/* Mobile Overlay */}
             {isMobileMenuOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    className="fixed inset-0 bg-black/50 z-20 md:hidden"
                     onClick={() => setIsMobileMenuOpen(false)}
                 />
             )}
@@ -797,9 +902,9 @@ import Footer from '@/components/home/Footer';
 
 export function PublicLayout() {
     return (
-        <div className="min-h-screen flex flex-col font-sans">
+        <div className="min-h-screen flex flex-col font-sans w-full">
             <Navbar />
-            <main className="flex-1">
+            <main className="flex-1 w-full">
                 <Outlet />
             </main>
             <Footer />
@@ -1049,7 +1154,7 @@ export function Sidebar({ className }: SidebarProps) {
     const routes = user?.role === 'vendor' ? vendorRoutes : userRoutes;
 
     return (
-        <div className={cn("pb-12 w-64 border-r bg-card h-screen fixed left-0 top-0 hidden md:block", className)}>
+        <div className={cn("pb-12 w-64 border-r bg-card h-screen fixed left-0 top-0 z-30 transition-transform duration-300 transform", className)}>
             <div className="space-y-4 py-4 h-full flex flex-col">
                 <div className="px-4 py-2 flex-none">
                     <h2 className="mb-2 px-2 text-xl font-heading font-bold tracking-tight text-primary">
@@ -2949,7 +3054,7 @@ export default function GalleryManager() {
             await api.delete(`/vendors/gallery/${id}`);
             setGallery(gallery.filter(item => item.id !== id));
             toast({ title: "Deleted", description: "Item removed from gallery." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to delete item.", variant: "destructive" });
         }
     };
@@ -3377,6 +3482,8 @@ import { useToast } from '@/hooks/use-toast';
 interface Location {
     address: string;
     city: string;
+    state?: string; // Added state
+    country?: string; // Added country
     pincode?: string;
     landmark?: string;
     mapUrl?: string;
@@ -3435,6 +3542,24 @@ export default function VendorProfileEditor() {
     };
 
     const handleSave = async () => {
+        // Validation
+        if (!formData.businessName.trim()) {
+            toast({ title: "Validation Error", description: "Business Name is required", variant: "destructive" });
+            return;
+        }
+        if (!formData.description.trim()) {
+            toast({ title: "Validation Error", description: "Description is required", variant: "destructive" });
+            return;
+        }
+        if (formData.locations.length > 0) {
+            for (const loc of formData.locations) {
+                if (!loc.address?.trim() || !loc.city?.trim() || !loc.state?.trim()) {
+                    toast({ title: "Validation Error", description: "Address, City and State are required for all locations", variant: "destructive" });
+                    return;
+                }
+            }
+        }
+
         setSaving(true);
         try {
             await api.post('/vendors/profile', {
@@ -3592,7 +3717,7 @@ export default function VendorProfileEditor() {
                         <CardContent className="space-y-4">
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Business Name</Label>
+                                    <Label>Business Name <span className="text-red-500">*</span></Label>
                                     <Input
                                         value={formData.businessName}
                                         onChange={e => setFormData({ ...formData, businessName: e.target.value })}
@@ -3600,7 +3725,7 @@ export default function VendorProfileEditor() {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Business Type</Label>
+                                    <Label>Business Type <span className="text-red-500">*</span></Label>
                                     <Select
                                         value={formData.businessType}
                                         onValueChange={v => setFormData({ ...formData, businessType: v })}
@@ -3616,7 +3741,7 @@ export default function VendorProfileEditor() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label>About your Business</Label>
+                                <Label>About your Business <span className="text-red-500">*</span></Label>
                                 <Textarea
                                     className="h-32"
                                     value={formData.description}
@@ -3627,7 +3752,7 @@ export default function VendorProfileEditor() {
 
                             <div className="grid md:grid-cols-3 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Years in Business</Label>
+                                    <Label>Years in Business <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                     <Input
                                         type="number"
                                         value={formData.yearsInBusiness}
@@ -3645,7 +3770,7 @@ export default function VendorProfileEditor() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2"><Instagram className="h-4 w-4" /> Instagram URL</Label>
+                                <Label className="flex items-center gap-2"><Instagram className="h-4 w-4" /> Instagram URL <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                 <Input
                                     placeholder="https://instagram.com/..."
                                     value={formData.socialLinks.instagram}
@@ -3656,7 +3781,7 @@ export default function VendorProfileEditor() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Website URL</Label>
+                                <Label className="flex items-center gap-2"><Globe className="h-4 w-4" /> Website URL <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                 <Input
                                     placeholder="https://yourwebsite.com"
                                     value={formData.socialLinks.website}
@@ -3667,7 +3792,7 @@ export default function VendorProfileEditor() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="flex items-center gap-2"><Facebook className="h-4 w-4" /> Facebook URL</Label>
+                                <Label className="flex items-center gap-2"><Facebook className="h-4 w-4" /> Facebook URL <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                 <Input
                                     placeholder="https://facebook.com/..."
                                     value={formData.socialLinks.facebook}
@@ -3709,7 +3834,7 @@ export default function VendorProfileEditor() {
                                     </div>
                                     <div className="md:col-span-10 grid gap-4">
                                         <div className="space-y-2">
-                                            <Label>Full Address</Label>
+                                            <Label>Full Address <span className="text-red-500">*</span></Label>
                                             <Input
                                                 value={loc.address}
                                                 onChange={e => updateLocation(index, 'address', e.target.value)}
@@ -3718,7 +3843,27 @@ export default function VendorProfileEditor() {
                                         </div>
                                         <div className="grid md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label>City</Label>
+                                                <Label>Country <span className="text-red-500">*</span></Label>
+                                                <Select value={loc.country} onValueChange={(v) => updateLocation(index, 'country', v)}>
+                                                    <SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="India">India</SelectItem>
+                                                        <SelectItem value="Other">Other</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>State/UT <span className="text-red-500">*</span></Label>
+                                                <Input
+                                                    value={loc.state}
+                                                    onChange={e => updateLocation(index, 'state', e.target.value)}
+                                                    placeholder="State"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>City <span className="text-red-500">*</span></Label>
                                                 <Input
                                                     value={loc.city}
                                                     onChange={e => updateLocation(index, 'city', e.target.value)}
@@ -3726,7 +3871,7 @@ export default function VendorProfileEditor() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Pincode</Label>
+                                                <Label>Pincode <span className="text-red-500">*</span></Label>
                                                 <Input
                                                     value={loc.pincode || ''}
                                                     onChange={e => updateLocation(index, 'pincode', e.target.value)}
@@ -3734,7 +3879,7 @@ export default function VendorProfileEditor() {
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Landmark</Label>
+                                                <Label>Landmark <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                                 <Input
                                                     value={loc.landmark || ''}
                                                     onChange={e => updateLocation(index, 'landmark', e.target.value)}
@@ -3770,7 +3915,7 @@ export default function VendorProfileEditor() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Terms & Policy Text</Label>
+                                <Label>Terms & Policy Text <span className="text-gray-400 text-xs">(Recommended)</span></Label>
                                 <Textarea
                                     className="min-h-[300px] font-mono text-sm"
                                     value={formData.termsAndConditions}
@@ -3781,7 +3926,7 @@ export default function VendorProfileEditor() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label>GST Number</Label>
+                                <Label>GST Number <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                 <Input
                                     value={formData.gstNumber}
                                     onChange={e => setFormData({ ...formData, gstNumber: e.target.value })}
@@ -3855,7 +4000,7 @@ export default function ServiceManager() {
             // Updating profile with new categories
             await api.patch('/vendors/profile', { serviceCategories: categories });
             toast({ title: "Saved", description: "Service categories updated." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to save categories.", variant: "destructive" });
         } finally {
             setSaving(false);
@@ -4154,7 +4299,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<User | null>(() => {
+        const savedUser = localStorage.getItem('user');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
     useEffect(() => {
@@ -4162,10 +4310,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Decode JWT here or fetch profile if needed.
             // For now, we simulate persistence if token exists
             // In real app, verify token with /auth/me endpoint
-            const savedUser = localStorage.getItem('user');
-            if (savedUser) {
-                setUser(JSON.parse(savedUser));
-            }
         }
     }, [token]);
 
@@ -4500,6 +4644,19 @@ FILE: src/index.css
   h6 {
     @apply font-heading tracking-tight;
   }
+
+  /* Responsive Typography */
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
 }
 
 @layer utilities {
@@ -4509,6 +4666,15 @@ FILE: src/index.css
 
   .glass-card {
     @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  /* Responsive Spacing Utilities */
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .container-padding {
+    @apply px-4 md:px-6 lg:px-8;
   }
 }
 
@@ -4643,8 +4809,8 @@ const TypewriterEffect = ({ words }: { words: string[] }) => {
         if (index === words.length) return;
 
         if (subIndex === words[index].length + 1 && !reverse) {
-            setReverse(true);
-            return;
+            const timeout = setTimeout(() => setReverse(true), 200);
+            return () => clearTimeout(timeout);
         }
 
         if (subIndex === 0 && reverse) {
@@ -4837,29 +5003,89 @@ export default function Landing() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.8 }}
-                        className="max-w-3xl mx-auto bg-white/10 backdrop-blur-xl p-3 md:p-2 rounded-3xl md:rounded-full border border-white/40 shadow-2xl flex flex-col md:flex-row gap-3 md:gap-2 ring-1 ring-black/5"
+                        transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
+                        className="
+                            w-full max-w-3xl mx-auto
+                            bg-white/10 backdrop-blur-2xl
+                            p-3 md:p-2
+                            rounded-[2rem] md:rounded-full
+                            border border-white/30
+                            shadow-[0_8px_30px_rgba(0,0,0,0.25)]
+                            flex flex-col md:flex-row
+                            gap-3 md:gap-0
+                            ring-1 ring-white/20
+                            relative z-20
+                        "
                     >
-                        <div className="flex-1 flex items-center px-4 h-14 bg-white/5 md:bg-transparent rounded-2xl md:rounded-none border border-white/30 md:border-none focus-within:bg-white/10 transition-colors">
-                            <Search className="text-gray-200 w-5 h-5 mr-3 shrink-0" />
+                        {/* Service Input */}
+                        <div className="
+                            flex-1 flex items-center px-4 h-14 md:h-16
+                            bg-black/20 md:bg-transparent
+                            rounded-2xl md:rounded-l-full md:rounded-r-none
+                            border border-white/10 md:border-none
+                            transition-all duration-300
+                            focus-within:bg-black/40 md:focus-within:bg-white/10
+                        ">
+                            <Search className="text-white/70 w-5 h-5 mr-3 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="Service (e.g. Photography)"
-                                className="bg-transparent border-none outline-none text-white placeholder:text-gray-300 w-full h-full text-base font-medium"
+                                className="
+                                    bg-transparent border-none outline-none
+                                    text-white placeholder:text-white/60
+                                    w-full h-full text-base font-medium
+                                "
                             />
                         </div>
-                        <div className="flex-1 flex items-center px-4 h-14 md:border-l md:border-white/30 bg-white/5 md:bg-transparent rounded-2xl md:rounded-none border border-white/30 md:border-none focus-within:bg-white/10 transition-colors">
-                            <MapPin className="text-gray-200 w-5 h-5 mr-3 shrink-0" />
+
+                        {/* Divider for Desktop */}
+                        <div className="hidden md:block w-px h-10 bg-white/20 self-center mx-2" />
+
+                        {/* City Input */}
+                        <div className="
+                            flex-1 flex items-center px-4 h-14 md:h-16
+                            bg-black/20 md:bg-transparent
+                            rounded-2xl md:rounded-none
+                            border border-white/10 md:border-none
+                            transition-all duration-300
+                            focus-within:bg-black/40 md:focus-within:bg-white/10
+                        ">
+                            <MapPin className="text-white/70 w-5 h-5 mr-3 shrink-0" />
                             <input
                                 type="text"
                                 placeholder="City (e.g. Mumbai)"
-                                className="bg-transparent border-none outline-none text-white placeholder:text-gray-300 w-full h-full text-base font-medium"
+                                className="
+                                    bg-transparent border-none outline-none
+                                    text-white placeholder:text-white/60
+                                    w-full h-full text-base font-medium
+                                "
                             />
                         </div>
-                        <Button size="lg" className="rounded-2xl md:rounded-full w-full md:w-auto px-8 h-14 text-lg font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg hover:shadow-amber-500/25 transition-all duration-300 border border-amber-400/50">
-                            Search
-                        </Button>
+
+                        {/* Search Button */}
+                        <div className="p-1">
+                            <Button
+                                size="lg"
+                                className="
+                                    w-full md:w-auto
+                                    h-14 md:h-14
+                                    px-8
+                                    rounded-xl md:rounded-full
+                                    text-lg font-bold tracking-wide
+                                    text-white
+                                    bg-gradient-to-r from-amber-500 to-orange-600
+                                    hover:from-amber-600 hover:to-orange-700
+                                    shadow-lg hover:shadow-amber-500/40
+                                    active:scale-95
+                                    transition-all duration-300
+                                    border border-white/10
+                                "
+                            >
+                                Search
+                            </Button>
+                        </div>
                     </motion.div>
+
 
                     {/* Quick Tags */}
                     <motion.div
@@ -5186,6 +5412,37 @@ import { useEffect, useRef } from 'react';
 import { motion, useTransform, useSpring, useMotionValue } from 'framer-motion';
 import gsap from 'gsap';
 
+const AnimatedPath = ({ path, index, smoothMouseX, smoothMouseY }: { path: string, index: number, smoothMouseX: any, smoothMouseY: any }) => {
+    const x = useTransform(smoothMouseX, [0, 1], [-30 * (index + 1), 30 * (index + 1)]);
+    const y = useTransform(smoothMouseY, [0, 1], [-30 * (index + 1), 30 * (index + 1)]);
+    const rotate = useTransform(smoothMouseX, [0, 1], [-5, 5]);
+
+    return (
+        <motion.path
+            d={path}
+            fill="none"
+            stroke="url(#grad1)"
+            strokeWidth="1.5"
+            initial={{ pathLength: 0, opacity: 0 }}
+            animate={{ pathLength: 1, opacity: 0.8 }}
+            transition={{
+                duration: 8,
+                ease: "easeInOut",
+                delay: index * 0.5,
+                repeat: Infinity,
+                repeatType: "reverse",
+                repeatDelay: 0.5
+            }}
+            style={{
+                scale: 1.2,
+                x,
+                y,
+                rotate,
+            }}
+        />
+    );
+};
+
 export const ArtisticBackground = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const mouseX = useMotionValue(0);
@@ -5246,29 +5503,7 @@ export const ArtisticBackground = () => {
                 </defs>
 
                 {paths.map((path, i) => (
-                    <motion.path
-                        key={i}
-                        d={path}
-                        fill="none"
-                        stroke="url(#grad1)"
-                        strokeWidth="1.5"
-                        initial={{ pathLength: 0, opacity: 0 }}
-                        animate={{ pathLength: 1, opacity: 0.8 }}
-                        transition={{
-                            duration: 8,
-                            ease: "easeInOut",
-                            delay: i * 0.5,
-                            repeat: Infinity,
-                            repeatType: "reverse",
-                            repeatDelay: 0.5
-                        }}
-                        style={{
-                            scale: 1.2,
-                            x: useTransform(smoothMouseX, [0, 1], [-30 * (i + 1), 30 * (i + 1)]),
-                            y: useTransform(smoothMouseY, [0, 1], [-30 * (i + 1), 30 * (i + 1)]),
-                            rotate: useTransform(smoothMouseX, [0, 1], [-5, 5]),
-                        }}
-                    />
+                    <AnimatedPath key={i} path={path} index={i} smoothMouseX={smoothMouseX} smoothMouseY={smoothMouseY} />
                 ))}
 
                 {/* Floating Circles */}
@@ -5393,15 +5628,16 @@ import { ArtisticBackground } from './ArtisticBackground';
 
 
 export default function Login() {
-    const [step, setStep] = useState<'role' | 'phone'>('role');
+    const [step, setStep] = useState<'role' | 'phone' | 'otp'>('role');
     const [role, setRole] = useState<'user' | 'vendor' | 'admin'>('user');
     const [phone, setPhone] = useState('');
+    const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleLogin = async () => {
+    const handleSendOtp = async () => {
         if (phone.length < 10) {
             setError('Please enter a valid phone number');
             return;
@@ -5410,30 +5646,42 @@ export default function Login() {
         setError('');
 
         try {
-            const response = await api.post('/auth/login', { phone, role });
+            await api.post('/auth/login', { phone, role });
+            // API sends OTP. Move to OTP step.
+            setStep('otp');
+        } catch (error) {
+            console.error('Failed to send OTP', error);
+            setError('Failed to send OTP. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (otp.length < 6) {
+            setError('Please enter the 6-digit code');
+            return;
+        }
+        setIsLoading(true);
+        setError('');
+
+        try {
+            const response = await api.post('/auth/verify', { phone, otp, role });
             const { accessToken, user } = response.data;
             login(accessToken, user);
 
             if (user.role === 'vendor') {
-                navigate('/vendor/onboarding');
+                navigate('/vendor/dashboard');
             } else if (user.role === 'user') {
-                navigate('/user/onboarding');
+                navigate('/user/dashboard');
             } else {
                 navigate('/');
             }
         } catch (error) {
             console.error('Login failed', error);
-            if (import.meta.env.DEV) {
-                setTimeout(() => {
-                    login('demo-token', { role, id: '1', phone });
-                    if (role === 'vendor') navigate('/vendor/onboarding');
-                    else navigate('/user/onboarding');
-                }, 1500);
-            } else {
-                setError('Login failed. Please try again.');
-            }
+            setError('Invalid OTP or login failed.');
         } finally {
-            // setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -5467,7 +5715,7 @@ export default function Login() {
             </div>
 
             {/* Right: Login Form */}
-            <div className="flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-white relative">
+            <div className="flex flex-col justify-center p-6 md:p-16 lg:p-24 bg-white relative min-h-screen lg:min-h-0">
                 <Link to="/" className="absolute top-8 right-8 flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-primary transition-colors group">
                     Back to Home <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </Link>
@@ -5477,17 +5725,17 @@ export default function Login() {
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: "4rem" }}
-                            transition={{ delay: 0.2, duration: 0.8, ease: "circOut" }}
+                            transition={{ delay: 0.1, duration: 0.4, ease: "circOut" }}
                             className="h-1 bg-primary mb-8 rounded-full"
                         />
-                        <AnimatedHeading text={step === 'role' ? 'Get Started' : 'Verify Identity'} />
+                        <AnimatedHeading text={step === 'role' ? 'Get Started' : (step === 'phone' ? 'Verify Identity' : 'Enter Code')} />
                         <motion.p
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            transition={{ delay: 0.6 }}
+                            transition={{ delay: 0.2 }}
                             className="text-gray-500 text-lg"
                         >
-                            {step === 'role' ? 'Select your account type to begin.' : 'Enter your mobile number for a secure code.'}
+                            {step === 'role' ? 'Select your account type to begin.' : (step === 'phone' ? 'Enter your mobile number for a secure code.' : `We sent a code to +91 ${phone}`)}
                         </motion.p>
                     </div>
 
@@ -5498,7 +5746,7 @@ export default function Login() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 20 }}
-                                transition={{ duration: 0.4 }}
+                                transition={{ duration: 0.2 }}
                                 className="space-y-4"
                             >
                                 <RoleCard
@@ -5506,20 +5754,20 @@ export default function Login() {
                                     description="I want to hire vendors"
                                     active={role === 'user'}
                                     onClick={() => setRole('user')}
-                                    delay={0.1}
+                                    delay={0}
                                 />
                                 <RoleCard
                                     title="List My Business"
                                     description="I am a service provider"
                                     active={role === 'vendor'}
                                     onClick={() => setRole('vendor')}
-                                    delay={0.2}
+                                    delay={0.1}
                                 />
 
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.4 }}
+                                    transition={{ delay: 0.2 }}
                                     className="pt-8"
                                 >
                                     <MagneticButton onClick={() => setStep('phone')} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
@@ -5538,12 +5786,15 @@ export default function Login() {
                                 className="space-y-8"
                             >
                                 <div className="space-y-4">
-                                    <label className="uppercase text-xs font-semibold tracking-wider text-gray-400">Mobile Number</label>
+                                    <label className="uppercase text-xs font-bold tracking-wider text-gray-500">
+                                        Mobile Number <span className="text-red-500">*</span>
+                                    </label>
                                     <AnimatedInput
                                         placeholder="98765 43210"
                                         value={phone}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                            setPhone(e.target.value);
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                            setPhone(val);
                                             setError('');
                                         }}
                                         type="tel"
@@ -5553,11 +5804,11 @@ export default function Login() {
                                 </div>
 
                                 <div className="flex flex-col gap-4 pt-4">
-                                    <MagneticButton onClick={handleLogin} disabled={isLoading} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
+                                    <MagneticButton onClick={handleSendOtp} disabled={isLoading} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
                                         {isLoading ? (
-                                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Verifying...</>
+                                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Sending...</>
                                         ) : (
-                                            'Login'
+                                            'Get OTP'
                                         )}
                                     </MagneticButton>
 
@@ -5571,6 +5822,56 @@ export default function Login() {
                                         disabled={isLoading}
                                     >
                                         <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {step === 'otp' && (
+                            <motion.div
+                                key="otp"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                className="space-y-8"
+                            >
+                                <div className="space-y-4">
+                                    <label className="uppercase text-xs font-bold tracking-wider text-gray-500">
+                                        Enter OTP <span className="text-red-500">*</span>
+                                    </label>
+                                    <AnimatedInput
+                                        placeholder="123456"
+                                        value={otp}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                            setOtp(val);
+                                            setError('');
+                                        }}
+                                        type="tel"
+                                        autoFocus
+                                        error={error}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col gap-4 pt-4">
+                                    <MagneticButton onClick={handleVerifyOtp} disabled={isLoading} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
+                                        {isLoading ? (
+                                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Verifying...</>
+                                        ) : (
+                                            'Login'
+                                        )}
+                                    </MagneticButton>
+
+                                    <Button
+                                        variant="ghost"
+                                        className="w-full hover:bg-gray-50 text-gray-500"
+                                        onClick={() => {
+                                            setStep('phone');
+                                            setError('');
+                                        }}
+                                        disabled={isLoading}
+                                    >
+                                        <ArrowLeft className="mr-2 h-4 w-4" /> Change Phone
                                     </Button>
                                 </div>
                             </motion.div>
@@ -6405,26 +6706,26 @@ export default function UserDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <header className="bg-white border-b px-8 py-4 flex justify-between items-center sticky top-0 z-10">
+            <header className="bg-white border-b px-4 md:px-8 py-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center gap-2">
                     <div className="bg-black text-white h-8 w-8 rounded flex items-center justify-center font-bold">M</div>
                     <span className="font-bold text-xl">MarketFly</span>
                 </div>
                 <div className="flex gap-4">
-                    <Button variant="ghost" onClick={logout}>Logout</Button>
+                    <Button variant="ghost" onClick={logout} size="sm">Logout</Button>
                 </div>
             </header>
 
-            <main className="flex-1 max-w-6xl mx-auto w-full p-8 space-y-8">
-                <div className="flex justify-between items-center">
+            <main className="flex-1 max-w-6xl mx-auto w-full p-4 md:p-8 space-y-6 md:space-y-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Hello, {(user as any)?.firstName || 'User'}!</h1>
-                        <p className="text-gray-500">Find the perfect vendors for your next event.</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Hello, {(user as any)?.firstName || 'User'}!</h1>
+                        <p className="text-gray-500 text-sm md:text-base">Find the perfect vendors for your next event.</p>
                     </div>
                 </div>
 
                 <Tabs defaultValue="recommended" className="w-full">
-                    <TabsList>
+                    <TabsList className="w-full justify-start overflow-x-auto">
                         <TabsTrigger value="recommended">Recommended</TabsTrigger>
                         <TabsTrigger value="events">My Events</TabsTrigger>
                         <TabsTrigger value="saved">Saved Vendors</TabsTrigger>
@@ -6584,7 +6885,7 @@ export default function UserOnboarding() {
                 <CardContent className="space-y-4">
                     {step === 1 && (
                         <>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="firstName">First Name</Label>
                                     <Input id="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="John" />
@@ -6608,7 +6909,7 @@ export default function UserOnboarding() {
                     {step === 2 && (
                         <>
                             <Label className="text-base">What are you interested in?</Label>
-                            <div className="grid grid-cols-2 gap-3 mt-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                                 {INTEREST_CATEGORIES.map(category => (
                                     <div key={category} className="flex items-center space-x-2 border p-3 rounded-md hover:bg-gray-50">
                                         <Checkbox
@@ -6714,7 +7015,7 @@ export default function UserSettings() {
             });
             updateUser(data);
             toast({ title: "Profile Updated", description: "Your account details have been saved." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -6731,7 +7032,7 @@ export default function UserSettings() {
             await api.patch('/users/me', { password: passwordForm.newPassword });
             toast({ title: "Password Updated", description: "Your password has been changed." });
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update password.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -6744,7 +7045,7 @@ export default function UserSettings() {
             const { data } = await api.patch('/users/me', { notificationPreferences: notificationForm });
             updateUser(data);
             toast({ title: "Preferences Saved", description: "Notification settings updated." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update preferences.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -7133,19 +7434,19 @@ export default function VendorDashboard() {
 
     return (
         <div className="space-y-8">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                     <p className="text-muted-foreground">
                         Welcome back, {user?.firstName || 'Vendor'}. Here's what's happening today.
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <Link to="/vendor/bookings">
-                        <Button variant="outline">View Bookings</Button>
+                <div className="flex gap-2 w-full md:w-auto">
+                    <Link to="/vendor/bookings" className="flex-1 md:flex-none">
+                        <Button variant="outline" className="w-full md:w-auto">View Bookings</Button>
                     </Link>
-                    <Link to="/vendor/packages/new">
-                        <Button>
+                    <Link to="/vendor/packages/new" className="flex-1 md:flex-none">
+                        <Button className="w-full md:w-auto">
                             <Plus className="mr-2 h-4 w-4" /> Create Package
                         </Button>
                     </Link>
@@ -7447,11 +7748,11 @@ export default function VendorOnboarding() {
     const [statusMessage, setStatusMessage] = useState('');
     const [logo, setLogo] = useState<File | null>(null);
 
-    const handleInputChange = (e: any) => setFormData({ ...formData, [e.target.id]: e.target.value });
-    const handleSelectChange = (field: string, value: string) => setFormData({ ...formData, [field]: value });
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setFormData({ ...formData, [e.target.id]: e.target.value });
+    const handleSelectChange = (field: string, value: string | string[]) => setFormData({ ...formData, [field]: value });
 
     // Compress image immediately upon selection
-    const handleFileChange = async (e: any) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
             const file = e.target.files[0];
             try {
@@ -7521,9 +7822,10 @@ export default function VendorOnboarding() {
             }
 
             navigate('/vendor/dashboard');
-        } catch (error: any) {
+        } catch (error) {
             console.error('Onboarding failed', error);
-            if (error.response?.status === 401) {
+            const err = error as { response?: { status: number } }; // Cast to access response
+            if (err.response?.status === 401) {
                 alert("Account role update required. Please log in again.");
                 logout();
                 navigate('/login');
@@ -7540,6 +7842,41 @@ export default function VendorOnboarding() {
         enter: (direction: number) => ({ x: direction > 0 ? 100 : -100, opacity: 0 }),
         center: { x: 0, opacity: 1 },
         exit: (direction: number) => ({ x: direction < 0 ? 100 : -100, opacity: 0 }),
+    };
+
+    const validateStep = (currentStep: number) => {
+        const errors: string[] = [];
+        if (currentStep === 1) {
+            if (!formData.firstName.trim()) errors.push("First Name is required");
+            if (!formData.lastName.trim()) errors.push("Last Name is required");
+            if (!formData.email.trim()) errors.push("Email is required");
+        }
+        if (currentStep === 2) {
+            if (!formData.businessName.trim()) errors.push("Business Name is required");
+            if (!formData.description.trim()) errors.push("Business Description is required");
+            if (!formData.country) errors.push("Country is required");
+            if (!formData.state.trim()) errors.push("State is required");
+            if (!formData.city.trim()) errors.push("City is required");
+            if (!formData.pincode.trim()) errors.push("Pincode is required");
+            if (!formData.plotNo.trim()) errors.push("Address is required");
+        }
+        if (currentStep === 3) {
+            if (formData.serviceCategories.length === 0) errors.push("Select at least one service category");
+            if (!formData.avgBookingPrice) errors.push("Select average booking price");
+        }
+        // Step 4 (Logo) is optional but good to have
+
+        if (errors.length > 0) {
+            alert(errors[0]); // Simple alert for now, could use toast or inline error
+            return false;
+        }
+        return true;
+    };
+
+    const handleNext = () => {
+        if (validateStep(step)) {
+            setStep(s => Math.min(4, s + 1));
+        }
     };
 
     const steps = [
@@ -7590,23 +7927,23 @@ export default function VendorOnboarding() {
                         >
                             {step === 1 && (
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="firstName">First Name</Label>
-                                            <Input id="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Enter your first name" className="h-11" />
+                                            <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
+                                            <Input id="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="Enter your first name" className="h-11" required />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="lastName">Last Name</Label>
-                                            <Input id="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Enter your last name" className="h-11" />
+                                            <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
+                                            <Input id="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Enter your last name" className="h-11" required />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="email">Email</Label>
-                                        <Input id="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="you@company.com" className="h-11" />
+                                        <Label htmlFor="email">Email <span className="text-red-500">*</span></Label>
+                                        <Input id="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="you@company.com" className="h-11" required />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Phone Verified</Label>
-                                        <Input value={user?.phone || ''} disabled className="bg-gray-50 border-green-200 text-green-700 font-medium" />
+                                        <Label>Phone Verified <CheckCircle className="inline h-3 w-3 text-green-500 ml-1" /></Label>
+                                        <Input value={user?.phone || ''} disabled className="bg-gray-50 border-green-200 text-green-700 font-medium opacity-100" />
                                     </div>
                                 </div>
                             )}
@@ -7615,16 +7952,16 @@ export default function VendorOnboarding() {
                                 <div className="space-y-6">
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label>Business Name</Label>
-                                            <Input id="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="e.g. Royal Weddings" className="h-11" />
+                                            <Label>Business Name <span className="text-red-500">*</span></Label>
+                                            <Input id="businessName" value={formData.businessName} onChange={handleInputChange} placeholder="e.g. Royal Weddings" className="h-11" required />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Business Description</Label>
-                                            <Input id="description" value={formData.description} onChange={handleInputChange} placeholder="Tell us about your services..." className="h-11" />
+                                            <Label>Business Description <span className="text-red-500">*</span></Label>
+                                            <Input id="description" value={formData.description} onChange={handleInputChange} placeholder="Tell us about your services..." className="h-11" required />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label>Type</Label>
+                                                <Label>Type <span className="text-red-500">*</span></Label>
                                                 <Select onValueChange={(v) => handleSelectChange('businessType', v)} defaultValue={formData.businessType}>
                                                     <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                                                     <SelectContent>
@@ -7635,12 +7972,12 @@ export default function VendorOnboarding() {
                                                 </Select>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Years Exp.</Label>
+                                                <Label>Years Exp. <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                                 <Input id="yearsInBusiness" type="number" value={formData.yearsInBusiness} onChange={handleInputChange} placeholder="0" className="h-11" />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>GST Number (Optional)</Label>
+                                            <Label>GST Number <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                             <Input id="gstNumber" value={formData.gstNumber} onChange={handleInputChange} placeholder="GSTIN..." className="h-11" />
                                         </div>
                                     </div>
@@ -7651,9 +7988,9 @@ export default function VendorOnboarding() {
                                                 <Building2 className="h-4 w-4" /> Address Details
                                             </h3>
                                             <div className="space-y-4">
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label>Country *</Label>
+                                                        <Label>Country <span className="text-red-500">*</span></Label>
                                                         <Select onValueChange={(v) => handleSelectChange('country', v)} defaultValue={formData.country}>
                                                             <SelectTrigger className="h-11 bg-white"><SelectValue placeholder="Select Country" /></SelectTrigger>
                                                             <SelectContent>
@@ -7663,41 +8000,41 @@ export default function VendorOnboarding() {
                                                         </Select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>State/UT *</Label>
-                                                        <Input id="state" value={formData.state} onChange={handleInputChange} placeholder="Enter State/UT" className="h-11 bg-white" />
+                                                        <Label>State/UT <span className="text-red-500">*</span></Label>
+                                                        <Input id="state" value={formData.state} onChange={handleInputChange} placeholder="Enter State/UT" className="h-11 bg-white" required />
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label>City *</Label>
-                                                        <Input id="city" value={formData.city} onChange={handleInputChange} placeholder="Enter City" className="h-11 bg-white" />
+                                                        <Label>City <span className="text-red-500">*</span></Label>
+                                                        <Input id="city" value={formData.city} onChange={handleInputChange} placeholder="Enter City" className="h-11 bg-white" required />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>Locality (Optional)</Label>
+                                                        <Label>Locality <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                                         <Input id="locality" value={formData.locality} onChange={handleInputChange} placeholder="Enter Locality" className="h-11 bg-white" />
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label>Pincode *</Label>
-                                                        <Input id="pincode" value={formData.pincode} onChange={handleInputChange} placeholder="Enter Pincode" className="h-11 bg-white" />
+                                                        <Label>Pincode <span className="text-red-500">*</span></Label>
+                                                        <Input id="pincode" value={formData.pincode} onChange={handleInputChange} placeholder="Enter Pincode" className="h-11 bg-white" required />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>Plot No/Street/Area *</Label>
-                                                        <Input id="plotNo" value={formData.plotNo} onChange={handleInputChange} placeholder="Plot No/Street/Area" className="h-11 bg-white" />
+                                                        <Label>Plot No/Street/Area <span className="text-red-500">*</span></Label>
+                                                        <Input id="plotNo" value={formData.plotNo} onChange={handleInputChange} placeholder="Plot No/Street/Area" className="h-11 bg-white" required />
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label>Landmark (Optional)</Label>
+                                                        <Label>Landmark <span className="text-gray-400 text-xs">(Optional)</span></Label>
                                                         <Input id="landmark" value={formData.landmark} onChange={handleInputChange} placeholder="Enter Landmark" className="h-11 bg-white" />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label>Mobile Number *</Label>
-                                                        <div className="flex bg-gray-50 border rounded-md h-11 items-center px-3 gap-2 overflow-hidden">
+                                                        <Label>Mobile Number <span className="text-red-500">*</span></Label>
+                                                        <div className="flex bg-gray-50 border rounded-md h-11 items-center px-3 gap-2 overflow-hidden cursor-not-allowed opacity-80">
                                                             <span className="text-gray-500 text-sm whitespace-nowrap font-medium">IN +91</span>
                                                             <span className="text-gray-700 font-medium">{user?.phone?.replace('+91', '') || ''}</span>
                                                         </div>
@@ -7711,9 +8048,9 @@ export default function VendorOnboarding() {
 
                             {step === 3 && (
                                 <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label>Monthly Events</Label>
+                                            <Label>Monthly Events <span className="text-red-500">*</span></Label>
                                             <Select onValueChange={(v) => handleSelectChange('eventVolume', v)} defaultValue={formData.eventVolume}>
                                                 <SelectTrigger className="h-11"><SelectValue placeholder="Select Volume" /></SelectTrigger>
                                                 <SelectContent>
@@ -7724,7 +8061,7 @@ export default function VendorOnboarding() {
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Avg Price</Label>
+                                            <Label>Avg Price <span className="text-red-500">*</span></Label>
                                             <Select onValueChange={(v) => handleSelectChange('avgBookingPrice', v)} defaultValue={formData.avgBookingPrice}>
                                                 <SelectTrigger className="h-11"><SelectValue placeholder="Select Range" /></SelectTrigger>
                                                 <SelectContent>
@@ -7736,7 +8073,7 @@ export default function VendorOnboarding() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Service Categories</Label>
+                                        <Label>Service Categories <span className="text-red-500">*</span></Label>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <Button
@@ -7773,7 +8110,7 @@ export default function VendorOnboarding() {
                                                                         const updated = current.includes(category)
                                                                             ? current.filter((c) => c !== category)
                                                                             : [...current, category];
-                                                                        handleSelectChange('serviceCategories', updated as any);
+                                                                        handleSelectChange('serviceCategories', updated);
                                                                     }}
                                                                 >
                                                                     <Check
@@ -7807,7 +8144,7 @@ export default function VendorOnboarding() {
                                                 </div>
                                             )}
                                             <div>
-                                                <p className="font-semibold text-lg">{logo ? logo.name : "Upload Logo"}</p>
+                                                <p className="font-semibold text-lg">{logo ? logo.name : "Upload Logo (Recommended)"}</p>
                                                 <p className="text-sm text-gray-500">{logo ? "Click to change" : "Drag & drop or click to browse"}</p>
                                             </div>
                                         </div>
@@ -7828,7 +8165,7 @@ export default function VendorOnboarding() {
                     </Button>
 
                     {step < 4 ? (
-                        <Button onClick={() => setStep(s => Math.min(4, s + 1))} className="bg-black hover:bg-gray-800 text-white rounded-full px-6">
+                        <Button onClick={handleNext} className="bg-black hover:bg-gray-800 text-white rounded-full px-6">
                             Next Step <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     ) : (
@@ -8200,7 +8537,7 @@ export default function VendorProfileEditor() {
                 title: "Profile Updated",
                 description: "Your business details have been saved successfully.",
             });
-        } catch (error) {
+        } catch {
             toast({
                 title: "Error",
                 description: "Failed to update profile. Please try again.",
@@ -8418,7 +8755,7 @@ export default function Settings() {
             });
             updateUser(data);
             toast({ title: "Profile Updated", description: "Your account details have been saved." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update profile.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -8435,7 +8772,7 @@ export default function Settings() {
             await api.patch('/users/me', { password: passwordForm.newPassword });
             toast({ title: "Password Updated", description: "Your password has been changed." });
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update password.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -8448,7 +8785,7 @@ export default function Settings() {
             const { data } = await api.patch('/users/me', { notificationPreferences: notificationForm });
             updateUser(data);
             toast({ title: "Preferences Saved", description: "Notification settings updated." });
-        } catch (error) {
+        } catch {
             toast({ title: "Error", description: "Failed to update preferences.", variant: "destructive" });
         } finally {
             setLoading(false);
@@ -8463,7 +8800,7 @@ export default function Settings() {
             </div>
 
             <Tabs defaultValue="account" className="space-y-4">
-                <TabsList>
+                <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
                     <TabsTrigger value="account">Account</TabsTrigger>
                     <TabsTrigger value="security">Security</TabsTrigger>
                     <TabsTrigger value="notifications">Notifications</TabsTrigger>

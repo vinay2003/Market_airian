@@ -1,5 +1,9 @@
-import { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useState, useEffect, Suspense, lazy } from 'react';
+import { Button } from '@/components/ui/button';
+import { Search, MapPin, ArrowRight, Star, Heart, Camera, Music, Utensils, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const Gallery = lazy(() => import('@/components/home/Gallery'));
 
 // --- Typewriter Effect Component ---
 const TypewriterEffect = ({ words }: { words: string[] }) => {
@@ -86,34 +90,40 @@ const CountdownTimer = () => {
 
 // --- Slots Counter Component ---
 const SlotsCounter = () => {
-    const [count, setCount] = useState(0);
     const target = 472; // Slots filled
+    const [count, setCount] = useState(0);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setCount(prev => {
-                if (prev < target) {
-                    const diff = target - prev;
-                    return prev + Math.ceil(diff / 10);
-                }
-                return target;
-            });
-        }, 50);
-        return () => clearInterval(interval);
+        // Simple fast increment for basic visual feedback without complex physics
+        const duration = 1000;
+        const steps = 20;
+        const increment = target / steps;
+        const speed = duration / steps;
+
+        let current = 0;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                setCount(target);
+                clearInterval(timer);
+            } else {
+                setCount(Math.floor(current));
+            }
+        }, speed);
+
+        return () => clearInterval(timer);
     }, []);
 
     return (
         <div className="mt-4">
             <div className="flex justify-between text-sm mb-2 font-medium">
                 <span>Slots Filled</span>
-                <span className="text-yellow-400">{count} / 500</span>
+                <span className="text-yellow-400 font-mono">{count} / 500</span>
             </div>
             <div className="h-3 w-full bg-white/10 rounded-full overflow-hidden border border-white/10">
-                <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(count / 500) * 100}%` }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
+                <div
                     className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full"
+                    style={{ width: `${(count / 500) * 100}%` }}
                 />
             </div>
             <p className="text-xs text-gray-400 mt-2 text-right">Only {500 - count} spots remaining!</p>
@@ -121,12 +131,6 @@ const SlotsCounter = () => {
     );
 };
 
-
-import { Button } from '@/components/ui/button';
-
-import { Search, MapPin, ArrowRight, Star, Heart, Camera, Music, Utensils, Home } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import Gallery from '@/components/home/Gallery';
 
 const CATEGORIES = [
     { name: 'Venues', icon: Home, color: 'bg-rose-100 text-rose-600', image: '/images/WhatsApp Image 2026-02-10 at 22.00.07.jpeg' },
@@ -169,39 +173,24 @@ const FEATURED_VENDORS = [
 ];
 
 export default function Landing() {
-    const targetRef = useRef<HTMLDivElement>(null);
-    const { scrollYProgress } = useScroll({
-        target: targetRef,
-        offset: ["start start", "end start"],
-    });
-
-    const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-    const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
-    const y = useTransform(scrollYProgress, [0, 0.5], [0, -50]);
-
     return (
         <div className="flex flex-col min-h-screen bg-background text-foreground overflow-x-hidden">
 
             {/* Hero Section */}
-            <section ref={targetRef} className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+            <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0">
                     <img
                         src="/images/WhatsApp Image 2026-02-10 at 21.59.51.jpeg"
                         alt="Background"
                         className="h-full w-full object-cover brightness-[0.4]"
+                        loading="eager"
+                        decoding="async"
                     />
                     <div className="absolute" />
                 </div>
 
-                <motion.div
-                    style={{ opacity, scale, y }}
-                    className="container px-4 md:px-6 relative z-20 text-center text-white space-y-8"
-                >
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
+                <div className="container px-4 md:px-6 relative z-20 text-center text-white space-y-8">
+                    <div>
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-heading mb-4 tracking-tight drop-shadow-xl">
                             Create Unforgettable <br className="hidden md:block" />
                             <TypewriterEffect words={["Weddings", "Parties", "Events", "Moments"]} />
@@ -209,13 +198,10 @@ export default function Landing() {
                         <p className="max-w-[700px] mx-auto text-lg md:text-xl text-gray-200 drop-shadow-md">
                             Discover and book the best vendors for your wedding, corporate event, or private party.
                         </p>
-                    </motion.div>
+                    </div>
 
                     {/* Search Bar - Responsive Optimization */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.6, ease: "easeOut" }}
+                    <div
                         className="
                             w-full max-w-3xl mx-auto
                             bg-white/10 backdrop-blur-2xl
@@ -235,7 +221,6 @@ export default function Landing() {
                             bg-black/20 md:bg-transparent
                             rounded-2xl md:rounded-l-full md:rounded-r-none
                             border border-white/10 md:border-none
-                            transition-all duration-300
                             focus-within:bg-black/40 md:focus-within:bg-white/10
                         ">
                             <Search className="text-white/70 w-5 h-5 mr-3 shrink-0" />
@@ -259,7 +244,6 @@ export default function Landing() {
                             bg-black/20 md:bg-transparent
                             rounded-2xl md:rounded-none
                             border border-white/10 md:border-none
-                            transition-all duration-300
                             focus-within:bg-black/40 md:focus-within:bg-white/10
                         ">
                             <MapPin className="text-white/70 w-5 h-5 mr-3 shrink-0" />
@@ -289,31 +273,25 @@ export default function Landing() {
                                     hover:from-amber-600 hover:to-orange-700
                                     shadow-lg hover:shadow-amber-500/40
                                     active:scale-95
-                                    transition-all duration-300
                                     border border-white/10
                                 "
                             >
                                 Search
                             </Button>
                         </div>
-                    </motion.div>
+                    </div>
 
 
                     {/* Quick Tags */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.6 }}
-                        className="flex flex-wrap justify-center gap-3 text-sm text-gray-300"
-                    >
+                    <div className="flex flex-wrap justify-center gap-3 text-sm text-gray-300">
                         <span>Popular:</span>
                         {['Wedding Photography', 'Banquet Halls', 'Makeup Artists', 'DJs'].map((tag) => (
-                            <button key={tag} className="hover:text-white underline decoration-dotted underline-offset-4 decoration-gray-500 transition-colors">
+                            <button key={tag} className="hover:text-white underline decoration-dotted underline-offset-4 decoration-gray-500">
                                 {tag}
                             </button>
                         ))}
-                    </motion.div>
-                </motion.div>
+                    </div>
+                </div>
             </section >
 
             {/* Categories Section */}
@@ -325,38 +303,35 @@ export default function Landing() {
                     </div>
                     <Link to="/vendors">
                         <Button variant="ghost" className="group hidden md:inline-flex">
-                            View All Categories <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            View All Categories <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1" />
                         </Button>
                     </Link>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {CATEGORIES.map((cat, i) => (
-                        <motion.div
+                        <div
                             key={cat.name}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-50px" }}
-                            transition={{ delay: i * 0.1, duration: 0.5 }}
-                            whileHover={{ y: -8, scale: 1.02 }}
-                            className="group relative h-64 md:h-72 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-300"
+                            className="group relative h-64 md:h-72 rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl"
                         >
                             <img
                                 src={cat.image}
                                 alt={cat.name}
-                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                className="absolute inset-0 w-full h-full object-cover"
+                                loading="lazy"
+                                decoding="async"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80" />
                             <div className="absolute bottom-0 left-0 p-6 w-full transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                                 <div className={`inline-flex p-3 rounded-full mb-3 backdrop-blur-md ${cat.color} bg-white/95 shadow-lg`}>
                                     <cat.icon className="w-5 h-5" />
                                 </div>
                                 <h3 className="text-2xl font-bold text-white mb-1">{cat.name}</h3>
-                                <p className="text-white/80 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0">
+                                <p className="text-white/80 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                     Explore {cat.name} &rarr;
                                 </p>
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
 
@@ -373,35 +348,28 @@ export default function Landing() {
             <section className="py-20 bg-muted/30">
                 <div className="container px-4 md:px-6 space-y-12">
                     <div className="text-center space-y-4 max-w-2xl mx-auto">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                        >
+                        <div>
                             <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Featured Vendors</h2>
                             <p className="text-muted-foreground text-lg mt-2">Top-rated professionals loved by our customers.</p>
-                        </motion.div>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {FEATURED_VENDORS.map((vendor, i) => (
-                            <motion.div
+                            <div
                                 key={vendor.id}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true, margin: "-50px" }}
-                                transition={{ delay: i * 0.1, duration: 0.5 }}
-                                whileHover={{ y: -5 }}
-                                className="group bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border/50"
+                                className="group bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-border/50"
                             >
                                 <div className="relative h-64 overflow-hidden">
                                     <img
                                         src={vendor.image}
                                         alt={vendor.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                        decoding="async"
                                     />
-                                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-                                    <button className="absolute top-4 right-4 p-2.5 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 transition-all text-white hover:scale-110 active:scale-95">
+                                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0" />
+                                    <button className="absolute top-4 right-4 p-2.5 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 text-white active:scale-95">
                                         <Heart className="w-5 h-5" />
                                     </button>
                                     <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm text-foreground">
@@ -411,7 +379,7 @@ export default function Landing() {
                                 <div className="p-6 space-y-4">
                                     <div>
                                         <div className="flex justify-between items-start gap-4">
-                                            <h3 className="font-bold text-xl group-hover:text-primary transition-colors line-clamp-1">{vendor.name}</h3>
+                                            <h3 className="font-bold text-xl group-hover:text-primary line-clamp-1">{vendor.name}</h3>
                                             <div className="flex items-center gap-1 text-sm font-medium bg-secondary/50 px-2 py-1 rounded-md shrink-0">
                                                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                                 {vendor.rating}
@@ -430,13 +398,13 @@ export default function Landing() {
                                             <p className="font-bold text-primary text-base">{vendor.price}</p>
                                         </div>
                                         <Link to={`/vendor/${vendor.id}`}>
-                                            <Button size="sm" className="rounded-full px-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                            <Button size="sm" className="rounded-full px-4 group-hover:bg-primary group-hover:text-primary-foreground">
                                                 View Profile
                                             </Button>
                                         </Link>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
 
@@ -479,15 +447,11 @@ export default function Landing() {
                                 color: "bg-green-100 text-green-600"
                             }
                         ].map((item, idx) => (
-                            <motion.div
+                            <div
                                 key={idx}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: idx * 0.2 }}
                                 className="relative flex flex-col items-center text-center space-y-6"
                             >
-                                <div className={`w-24 h-24 rounded-full ${item.color} flex items-center justify-center shadow-xl relative z-10 group transition-transform hover:scale-110 duration-300`}>
+                                <div className={`w-24 h-24 rounded-full ${item.color} flex items-center justify-center shadow-xl relative z-10 group`}>
                                     <item.icon className="w-10 h-10" />
                                     <div className="absolute -top-2 -right-2 bg-gray-900 text-white text-xs font-bold w-8 h-8 flex items-center justify-center rounded-full border-4 border-white">
                                         {item.step}
@@ -497,7 +461,7 @@ export default function Landing() {
                                     <h3 className="text-2xl font-bold mb-3 text-gray-900">{item.title}</h3>
                                     <p className="text-gray-600 leading-relaxed">{item.desc}</p>
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -507,33 +471,24 @@ export default function Landing() {
 
             {/* Early Bird Offer Section */}
             <section className="py-20 bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-900 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 animate-pulse"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
 
                 {/* Floating Elements */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                    <motion.div
-                        animate={{ y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                    <div
                         className="absolute top-20 left-10 w-32 h-32 bg-yellow-500/20 rounded-full blur-3xl"
                     />
-                    <motion.div
-                        animate={{ y: [0, 30, 0], opacity: [0.3, 0.5, 0.3] }}
-                        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                    <div
                         className="absolute bottom-20 right-10 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl"
                     />
                 </div>
 
                 <div className="container px-4 md:px-6 relative z-10 text-center space-y-8">
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        className="inline-block"
-                    >
+                    <div className="inline-block">
                         <span className="bg-yellow-400 text-indigo-900 font-bold px-4 py-1.5 rounded-full text-sm uppercase tracking-wider mb-4 inline-block shadow-lg">
                             Early Bird Offer
                         </span>
-                    </motion.div>
+                    </div>
 
                     <h2 className="text-4xl md:text-5xl font-heading font-bold mb-2 leading-tight">
                         Be Among the First 500 Vendors. <br />
@@ -550,14 +505,13 @@ export default function Landing() {
                             { title: "Founding Member Badge", desc: "Exclusive profile badge to standout and build trust instantly.", color: "text-yellow-300" },
                             { title: "Premium Visibility", desc: "Secure top spots in search results before the market gets crowded.", color: "text-yellow-300" }
                         ].map((card, idx) => (
-                            <motion.div
+                            <div
                                 key={idx}
-                                whileHover={{ y: -10, scale: 1.02 }}
-                                className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 hover:bg-white/15 hover:border-yellow-400/50 transition-colors shadow-lg"
+                                className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-lg"
                             >
                                 <h3 className={`text-xl font-bold mb-2 ${card.color}`}>{card.title}</h3>
                                 <p className="text-gray-200">{card.desc}</p>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
 
@@ -572,16 +526,16 @@ export default function Landing() {
 
                             <div className="mt-8">
                                 <Link to="/vendor/onboarding">
-                                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                        <Button size="lg" className="bg-yellow-400 text-indigo-900 hover:bg-yellow-300 font-bold text-lg px-10 h-16 rounded-full shadow-xl hover:shadow-yellow-400/30 transition-all w-full md:w-auto relative overflow-hidden group">
+                                    <div className="inline-block">
+                                        <Button size="lg" className="bg-yellow-400 text-indigo-900 hover:bg-yellow-300 font-bold text-lg px-10 h-16 rounded-full shadow-xl transition-all w-full md:w-auto relative overflow-hidden group">
                                             <span className="relative z-10 flex items-center gap-2">
                                                 Secure Your Spot Today <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                             </span>
                                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                                         </Button>
-                                    </motion.div>
+                                    </div>
                                 </Link>
-                                <p className="text-sm text-gray-400 mt-3 animate-pulse">
+                                <p className="text-sm text-gray-400 mt-3">
                                     Launch Offer Ends Soon!
                                 </p>
                             </div>
@@ -610,7 +564,10 @@ export default function Landing() {
             </section>
 
             {/* Gallery Section */}
-            < Gallery />
+            {/* Gallery Section */}
+            <Suspense fallback={<div className="h-96 flex items-center justify-center">Loading Gallery...</div>}>
+                <Gallery />
+            </Suspense>
         </div >
     );
 }
