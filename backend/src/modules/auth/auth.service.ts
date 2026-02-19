@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserRole } from '../users/user.entity';
 import { Otp } from './otp.entity';
+import { SmsService } from '../sms/sms.service';
 
 @Injectable()
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
         @InjectRepository(Otp)
         private otpRepository: Repository<Otp>,
         private jwtService: JwtService,
+        private smsService: SmsService,
     ) { }
 
     async sendOtp(phone: string): Promise<void> {
@@ -26,7 +28,10 @@ export class AuthService {
             expiresAt,
         });
 
-        console.log(`[MOCK SMS] OTP for ${phone}: ${code}`);
+        // Don't await SMS sending to prevent blocking the response
+        this.smsService.sendOtp(phone, code).catch(err => {
+            console.error(`Failed to send SMS to ${phone}`, err);
+        });
     }
 
     async login(phone: string, role: UserRole): Promise<{ accessToken: string; user: User }> {

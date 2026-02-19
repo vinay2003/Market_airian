@@ -8,6 +8,8 @@ import { User } from '../users/user.entity';
 import { Otp } from './otp.entity';
 import { JwtStrategy } from './jwt.strategy';
 
+import { SmsModule } from '../sms/sms.module';
+
 @Module({
     imports: [
         TypeOrmModule.forFeature([User, Otp]),
@@ -15,10 +17,12 @@ import { JwtStrategy } from './jwt.strategy';
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => ({
                 secret: configService.get<string>('JWT_SECRET'),
-                signOptions: { expiresIn: (configService.get<string>('JWT_EXPIRATION') ?? '1h') as any },
+                signOptions: { expiresIn: '1h' },
             }),
             inject: [ConfigService],
         }),
+        ConfigModule,
+        SmsModule,
     ],
     providers: [AuthService, JwtStrategy],
     controllers: [AuthController],

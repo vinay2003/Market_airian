@@ -101,6 +101,18 @@
   h3 {
     @apply text-2xl md:text-3xl;
   }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  h5 {
+    @apply text-lg md:text-xl;
+  }
+
+  h6 {
+    @apply text-base md:text-lg font-bold;
+  }
 }
 
 @layer utilities {
@@ -114,7 +126,7 @@
 
   /* Responsive Spacing Utilities */
   .section-padding {
-    @apply py-16 md:py-24;
+    @apply py-12 md:py-20 lg:py-24;
   }
 
   .container-padding {
