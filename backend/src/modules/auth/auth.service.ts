@@ -34,6 +34,27 @@ export class AuthService {
         });
     }
 
+    async verifyOtp(phone: string, code: string): Promise<boolean> {
+        const otpRecord = await this.otpRepository.findOne({
+            where: { phone, code },
+            order: { createdAt: 'DESC' },
+        });
+
+        if (!otpRecord) {
+            return false;
+        }
+
+        // Check expiry (e.g. 5 mins)
+        if (new Date() > otpRecord.expiresAt) {
+            return false;
+        }
+
+        // Optional: Delete OTP after usage to prevent replay
+        await this.otpRepository.delete(otpRecord.id);
+
+        return true;
+    }
+
     async login(phone: string, role: UserRole): Promise<{ accessToken: string; user: User }> {
         let user = await this.userRepository.findOne({ where: { phone } });
 
@@ -41,11 +62,9 @@ export class AuthService {
             user = this.userRepository.create({ phone, role, isVerified: true });
             await this.userRepository.save(user);
         } else if (user.role !== role) {
-            // Update role if user is logging in with a different role context
             user.role = role;
             await this.userRepository.save(user);
         }
-        // No else block: if user exists and role matches, we skip the save(), reducing latency.
 
         const payload = { sub: user.id, phone: user.phone, role: user.role };
         const accessToken = this.jwtService.sign(payload);

@@ -27,7 +27,7 @@ export default function Login() {
         setError('');
 
         try {
-            await api.post('/auth/login', { phone, role });
+            await api.post('/auth/send-otp', { phone });
             // API sends OTP. Move to OTP step.
             setStep('otp');
         } catch (error) {
