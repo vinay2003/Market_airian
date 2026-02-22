@@ -28,8 +28,8 @@ export default function Hero() {
                         transition={{ duration: 0.6 }}
                         className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-white shadow-sm border border-gray-100 text-xs md:text-sm font-medium text-gray-600 mb-2 md:mb-4 mx-auto lg:mx-0"
                     >
-                        <Star className="h-3 w-3 md:h-4 md:w-4 text-primary fill-primary" />
-                        <span>The Premier Marketplace for Events</span>
+                        <Star className="h-3 w-3 md:h-4 md:w-4 text-primary fill-primary" aria-hidden="true" />
+                        <span>Trusted Vendors. Perfect Events.</span>
                     </motion.div>
 
                     <motion.h1
@@ -78,7 +78,7 @@ export default function Hero() {
                         transition={{ duration: 1, delay: 0.8 }}
                         className="pt-6 md:pt-8 flex items-center justify-center lg:justify-start gap-4 md:gap-8 text-sm text-gray-500"
                     >
-                        <div className="flex -space-x-3">
+                        <div className="flex -space-x-3" aria-hidden="true">
                             {[1, 2, 3, 4].map(i => (
                                 <div key={i} className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white bg-gray-200" />
                             ))}

@@ -11,7 +11,7 @@ const testimonials = [
     {
         name: "Event Horizon Co.",
         role: "Corporate Vendor",
-        text: "Since listing on MarketFly, our bookings have doubled. The quality of leads is outstanding compared to other platforms.",
+        text: "Since listing on Airion, our bookings have doubled. The quality of leads is outstanding compared to other platforms.",
         image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop"
     },
     {

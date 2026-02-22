@@ -1,72 +1,81 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-
-type UserRole = 'admin' | 'vendor' | 'user';
-
-interface User {
+interface Vendor {
     id: string;
+    businessName: string;
+    email: string;
     phone: string;
-    role: UserRole;
+    category?: string;
+    city?: string;
+    avatar?: string;
+    logo?: string;
+    description?: string;
     firstName?: string;
     lastName?: string;
-    avatar?: string;
-    email?: string;
-    notificationPreferences?: {
-        email: boolean;
-        sms: boolean;
-        bookingUpdates: boolean;
-        marketing: boolean;
-    };
+    role?: 'vendor' | 'user';
+    notificationPreferences?: any;
 }
 
 interface AuthContextType {
-    user: User | null;
-    token: string | null;
-    login: (token: string, user: User) => void;
+    vendor: Vendor | null;
+    user: Vendor | null; // Alias for vendor
+    accessToken: string | null;
+    isAuthenticated: boolean;
+    login: (token: string, vendor: Vendor) => void;
     logout: () => void;
-    updateUser: (data: Partial<User>) => void;
+    updateVendor: (data: Partial<Vendor>) => void;
+    updateUser: (data: Partial<Vendor>) => void; // Alias for updateVendor
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(() => {
-        const savedUser = localStorage.getItem('user');
-        return savedUser ? JSON.parse(savedUser) : null;
+    const [vendor, setVendor] = useState<Vendor | null>(() => {
+        const savedVendor = localStorage.getItem('vendor');
+        return savedVendor ? JSON.parse(savedVendor) : null;
     });
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('token'));
 
     useEffect(() => {
-        if (token) {
-            // Decode JWT here or fetch profile if needed.
-            // For now, we simulate persistence if token exists
-            // In real app, verify token with /auth/me endpoint
+        if (accessToken) {
+            // Future: verify token with /auth/me or similar endpoint
         }
-    }, [token]);
+    }, [accessToken]);
 
-    const login = (newToken: string, newUser: User) => {
+    const login = (newToken: string, newVendor: Vendor) => {
         localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(newUser));
-        setToken(newToken);
-        setUser(newUser);
+        localStorage.setItem('vendor', JSON.stringify(newVendor));
+        setAccessToken(newToken);
+        setVendor(newVendor);
     };
 
     const logout = () => {
         localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setToken(null);
-        setUser(null);
+        localStorage.removeItem('vendor');
+        setAccessToken(null);
+        setVendor(null);
     };
 
-    const updateUser = (data: Partial<User>) => {
-        if (!user) return;
-        const updatedUser = { ...user, ...data };
-        setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+    const updateVendor = (data: Partial<Vendor>) => {
+        if (!vendor) return;
+        const updatedVendor = { ...vendor, ...data };
+        setVendor(updatedVendor);
+        localStorage.setItem('vendor', JSON.stringify(updatedVendor));
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, updateUser }}>
+        <AuthContext.Provider
+            value={{
+                vendor,
+                user: vendor,
+                accessToken,
+                isAuthenticated: !!accessToken,
+                login,
+                logout,
+                updateVendor,
+                updateUser: updateVendor
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

@@ -1,66 +1,42 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motion';
-import { ArrowRight, Loader2, ArrowLeft, ArrowUpRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, Loader2, ArrowUpRight } from 'lucide-react';
 import { ArtisticBackground } from './ArtisticBackground';
-
+import { BRAND } from '@/lib/constants';
 
 export default function Login() {
-    const [step, setStep] = useState<'role' | 'phone' | 'otp'>('role');
-    const [role, setRole] = useState<'user' | 'vendor' | 'admin'>('user');
-    const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleSendOtp = async () => {
-        if (phone.length < 10) {
-            setError('Please enter a valid phone number');
-            return;
-        }
-        setIsLoading(true);
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
         setError('');
 
-        try {
-            await api.post('/auth/send-otp', { phone });
-            // API sends OTP. Move to OTP step.
-            setStep('otp');
-        } catch (error) {
-            console.error('Failed to send OTP', error);
-            setError('Failed to send OTP. Please try again.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async () => {
-        if (otp.length < 6) {
-            setError('Please enter the 6-digit code');
+        if (!email || !password) {
+            setError('Please enter both email and password.');
             return;
         }
+
         setIsLoading(true);
-        setError('');
 
         try {
-            const response = await api.post('/auth/verify', { phone, otp, role });
-            const { accessToken, user } = response.data;
-            login(accessToken, user);
-
-            if (user.role === 'vendor') {
-                navigate('/vendor/dashboard');
-            } else if (user.role === 'user') {
-                navigate('/user/dashboard');
-            } else {
-                navigate('/');
-            }
-        } catch (error) {
+            const response = await api.post('/auth/login', { email, password });
+            // Assume response data contains: { accessToken, vendor }
+            const { accessToken, vendor } = response.data;
+            login(accessToken, vendor);
+            navigate('/vendor/dashboard');
+        } catch (error: any) {
             console.error('Login failed', error);
-            setError('Invalid OTP or login failed.');
+            setError(error.response?.data?.message || 'Invalid email or password.');
         } finally {
             setIsLoading(false);
         }
@@ -88,309 +64,137 @@ export default function Login() {
                     </motion.div>
                 </div>
 
-                <div className="relative z-10 flex gap-4 text-sm font-medium text-gray-500 pointer-events-auto">
-                    <span>© 2026 Market Airian</span>
-                    <span>•</span>
-                    <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+                <div className="relative z-10 flex gap-4 text-sm font-medium text-gray-500 flex-col">
+                    <span>Vendor Portal access only.</span>
+                    <div className="flex gap-4 pointer-events-auto">
+                        <span>© {BRAND.year} {BRAND.fullName}</span>
+                        <span>•</span>
+                        <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+                    </div>
                 </div>
             </div>
 
             {/* Right: Login Form */}
-            <div className="flex flex-col justify-center p-6 md:p-16 lg:p-24 bg-white relative min-h-screen lg:min-h-0">
+            <div className="flex flex-col justify-center p-6 md:p-16 lg:p-24 bg-white relative min-h-screen lg:min-h-0 shadow-[rgba(17,_17,_26,_0.05)_0px_0px_16px]">
                 <Link to="/" className="absolute top-8 right-8 flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-primary transition-colors group">
                     Back to Home <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </Link>
 
-                <div className="w-full max-w-sm mx-auto space-y-12">
+                <div className="w-full max-w-md mx-auto space-y-10">
                     <div className="space-y-4">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: "4rem" }}
                             transition={{ delay: 0.1, duration: 0.4, ease: "circOut" }}
-                            className="h-1 bg-primary mb-8 rounded-full"
+                            className="h-1 bg-primary mb-6 rounded-full"
                         />
-                        <AnimatedHeading text={step === 'role' ? 'Get Started' : (step === 'phone' ? 'Verify Identity' : 'Enter Code')} />
-                        <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                            className="text-gray-500 text-lg"
-                        >
-                            {step === 'role' ? 'Select your account type to begin.' : (step === 'phone' ? 'Enter your mobile number for a secure code.' : `We sent a code to +91 ${phone}`)}
-                        </motion.p>
+                        <h1 className="text-4xl font-heading font-bold text-gray-900">
+                            Welcome Back
+                        </h1>
+                        <p className="text-gray-500 text-lg">
+                            Login to manage your vendor business.
+                        </p>
                     </div>
 
-                    <AnimatePresence mode="wait">
-                        {step === 'role' && (
-                            <motion.div
-                                key="role"
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20 }}
-                                transition={{ duration: 0.2 }}
-                                className="space-y-4"
-                            >
-                                <RoleCard
-                                    title="Plan an Event"
-                                    description="I want to hire vendors"
-                                    active={role === 'user'}
-                                    onClick={() => setRole('user')}
-                                    delay={0}
-                                />
-                                <RoleCard
-                                    title="List My Business"
-                                    description="I am a service provider"
-                                    active={role === 'vendor'}
-                                    onClick={() => setRole('vendor')}
-                                    delay={0.1}
-                                />
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="uppercase text-xs font-bold tracking-wider text-gray-500 block mb-2">
+                                    Email Address <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        className="w-full h-12 text-lg border-b-2 border-gray-200 focus:border-slate-900 outline-none bg-transparent transition-colors placeholder:text-gray-300"
+                                        placeholder="vendor@example.com"
+                                        value={email}
+                                        onChange={(e) => {
+                                            setEmail(e.target.value);
+                                            setError('');
+                                        }}
+                                        type="email"
+                                        autoComplete="email"
+                                    />
+                                </div>
+                            </div>
 
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2 }}
-                                    className="pt-8"
+                            <div>
+                                <label className="uppercase text-xs font-bold tracking-wider text-gray-500 block mb-2">
+                                    Password <span className="text-red-500">*</span>
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        className="w-full h-12 text-lg border-b-2 border-gray-200 focus:border-slate-900 outline-none bg-transparent transition-colors placeholder:text-gray-300 pr-10"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => {
+                                            setPassword(e.target.value);
+                                            setError('');
+                                        }}
+                                        type={showPassword ? 'text' : 'password'}
+                                        autoComplete="current-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-2"
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2">
+                                <label className="flex items-center gap-2 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 rounded border-gray-300 text-slate-900 focus:ring-slate-900 focus:ring-opacity-25 transition-colors cursor-pointer"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                    />
+                                    <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">Remember me</span>
+                                </label>
+                                <Link
+                                    to="/forgot-password"
+                                    className="text-sm font-medium text-slate-900 hover:text-primary transition-colors hover:underline"
                                 >
-                                    <MagneticButton onClick={() => setStep('phone')} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
-                                        Continue <ArrowRight className="ml-2 h-5 w-5" />
-                                    </MagneticButton>
-                                </motion.div>
-                            </motion.div>
-                        )}
+                                    Forgot password?
+                                </Link>
+                            </div>
+                        </div>
 
-                        {step === 'phone' && (
-                            <motion.div
-                                key="phone"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                className="space-y-8"
+                        {error && (
+                            <motion.p
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-sm text-red-500 font-medium"
                             >
-                                <div className="space-y-4">
-                                    <label className="uppercase text-xs font-bold tracking-wider text-gray-500">
-                                        Mobile Number <span className="text-red-500">*</span>
-                                    </label>
-                                    <AnimatedInput
-                                        placeholder="98765 43210"
-                                        value={phone}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                            setPhone(val);
-                                            setError('');
-                                        }}
-                                        type="tel"
-                                        autoFocus
-                                        error={error}
-                                    />
-                                </div>
-
-                                <div className="flex flex-col gap-4 pt-4">
-                                    <MagneticButton onClick={handleSendOtp} disabled={isLoading} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
-                                        {isLoading ? (
-                                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Sending...</>
-                                        ) : (
-                                            'Get OTP'
-                                        )}
-                                    </MagneticButton>
-
-                                    <Button
-                                        variant="ghost"
-                                        className="w-full hover:bg-gray-50 text-gray-500"
-                                        onClick={() => {
-                                            setStep('role');
-                                            setError('');
-                                        }}
-                                        disabled={isLoading}
-                                    >
-                                        <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
-                                    </Button>
-                                </div>
-                            </motion.div>
+                                {error}
+                            </motion.p>
                         )}
 
-                        {step === 'otp' && (
-                            <motion.div
-                                key="otp"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                                className="space-y-8"
+                        <div className="flex flex-col gap-4 pt-4">
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full h-14 text-lg bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800 transition-all flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 active:scale-[0.98]"
                             >
-                                <div className="space-y-4">
-                                    <label className="uppercase text-xs font-bold tracking-wider text-gray-500">
-                                        Enter OTP <span className="text-red-500">*</span>
-                                    </label>
-                                    <AnimatedInput
-                                        placeholder="123456"
-                                        value={otp}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                                            setOtp(val);
-                                            setError('');
-                                        }}
-                                        type="tel"
-                                        autoFocus
-                                        error={error}
-                                    />
-                                </div>
+                                {isLoading ? (
+                                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Logging in...</>
+                                ) : (
+                                    'Sign In'
+                                )}
+                            </button>
 
-                                <div className="flex flex-col gap-4 pt-4">
-                                    <MagneticButton onClick={handleVerifyOtp} disabled={isLoading} className="w-full h-14 text-lg bg-slate-900 text-white rounded-full">
-                                        {isLoading ? (
-                                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Verifying...</>
-                                        ) : (
-                                            'Login'
-                                        )}
-                                    </MagneticButton>
-
-                                    <Button
-                                        variant="ghost"
-                                        className="w-full hover:bg-gray-50 text-gray-500"
-                                        onClick={() => {
-                                            setStep('phone');
-                                            setError('');
-                                        }}
-                                        disabled={isLoading}
-                                    >
-                                        <ArrowLeft className="mr-2 h-4 w-4" /> Change Phone
-                                    </Button>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                            <p className="text-center text-sm text-gray-500 mt-4">
+                                Don't have a vendor account?{' '}
+                                <Link to="/register-vendor" className="font-semibold text-slate-900 hover:text-primary transition-colors underline-offset-4 hover:underline">
+                                    Register now
+                                </Link>
+                            </p>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-    );
-}
-
-// --- Components ---
-
-function AnimatedHeading({ text }: { text: string }) {
-    return (
-        <h1 className="text-4xl font-heading font-bold text-gray-900 overflow-hidden">
-            <motion.span
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1], delay: 0.2 }}
-                className="inline-block"
-            >
-                {text}
-            </motion.span>
-        </h1>
-    );
-}
-
-function RoleCard({ title, description, active, onClick, delay }: { title: string, description: string, active: boolean, onClick: () => void, delay: number }) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay, duration: 0.5 }}
-            onClick={onClick}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`cursor-pointer relative p-6 border transition-all duration-300 rounded-xl overflow-hidden ${active
-                ? 'border-slate-900 bg-slate-50 shadow-md'
-                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-        >
-            <div className="flex justify-between items-start relative z-10">
-                <div>
-                    <h3 className={`font-heading font-bold text-xl mb-1 ${active ? 'text-slate-900' : 'text-gray-600'}`}>
-                        {title}
-                    </h3>
-                    <p className="text-sm text-gray-500">{description}</p>
-                </div>
-                <div className={`h-6 w-6 rounded-full border flex items-center justify-center transition-all duration-300 ${active ? 'border-slate-900 bg-slate-900 text-white scale-110' : 'border-gray-300'
-                    }`}>
-                    {active && <motion.div layoutId="active-dot" className="h-2 w-2 bg-white rounded-full" />}
-                </div>
-            </div>
-        </motion.div>
-    );
-}
-
-function AnimatedInput({ value, onChange, placeholder, type, autoFocus, error }: any) {
-    const [focused, setFocused] = useState(false);
-
-    return (
-        <div className="relative">
-            <input
-                className="w-full h-14 text-2xl font-serif bg-transparent border-none outline-none placeholder:text-gray-300 text-gray-900 p-0"
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                type={type}
-                autoFocus={autoFocus}
-                onFocus={() => setFocused(true)}
-                onBlur={() => setFocused(false)}
-            />
-            {/* Base Border */}
-            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gray-200" />
-
-            {/* Animated SVG Border */}
-            <svg className="absolute bottom-[-2px] left-0 w-full h-[4px] overflow-visible pointer-events-none">
-                <motion.path
-                    d={`M0,2 L${window.innerWidth},2`} // Approximation, driven by CSS width
-                    stroke="#0f172a"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: focused ? 1 : 0 }}
-                    transition={{ duration: 0.6, ease: "easeInOut" }}
-                    className="w-full"
-                />
-            </svg>
-
-            {error && (
-                <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="absolute -bottom-8 left-0 text-sm text-red-500 font-medium"
-                >
-                    {error}
-                </motion.p>
-            )}
-        </div>
-    );
-}
-
-function MagneticButton({ children, onClick, className, disabled }: any) {
-    const ref = useRef<HTMLButtonElement>(null);
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
-
-    const mouseX = useSpring(x, { stiffness: 150, damping: 15, mass: 0.1 });
-    const mouseY = useSpring(y, { stiffness: 150, damping: 15, mass: 0.1 });
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        const { clientX, clientY } = e;
-        const { left, top, width, height } = ref.current!.getBoundingClientRect();
-        const centerX = left + width / 2;
-        const centerY = top + height / 2;
-        x.set((clientX - centerX) * 0.35); // Magnetic strength
-        y.set((clientY - centerY) * 0.35);
-    };
-
-    const handleMouseLeave = () => {
-        x.set(0);
-        y.set(0);
-    };
-
-    return (
-        <motion.button
-            ref={ref}
-            onClick={onClick}
-            disabled={disabled}
-            className={`${className} relative overflow-hidden flex items-center justify-center`}
-            style={{ x: mouseX, y: mouseY }}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-        >
-            <span className="relative z-10 flex items-center">{children}</span>
-        </motion.button>
     );
 }

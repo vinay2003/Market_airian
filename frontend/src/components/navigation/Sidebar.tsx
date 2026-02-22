@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { BRAND } from '@/lib/constants';
 import {
     LayoutDashboard,
     Calendar,
@@ -101,29 +102,38 @@ export function Sidebar({ className }: SidebarProps) {
             <div className="space-y-4 py-4 h-full flex flex-col">
                 <div className="px-4 py-2 flex-none">
                     <h2 className="mb-2 px-2 text-xl font-heading font-bold tracking-tight text-primary">
-                        Market Airian
+                        {BRAND.name}
                     </h2>
                     <p className="px-2 text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                         {user?.role === 'vendor' ? 'Vendor Portal' : 'User Portal'}
                     </p>
                 </div>
                 <ScrollAreaStub className="px-3 py-2 flex-1">
-                    <div className="space-y-1">
-                        {routes.map((route) => (
-                            <Link key={route.href} to={route.href}>
-                                <Button
-                                    variant={pathname.startsWith(route.pattern) ? "secondary" : "ghost"}
-                                    className={cn(
-                                        "w-full justify-start gap-2",
-                                        pathname.startsWith(route.pattern) && "font-semibold text-primary bg-primary/10"
-                                    )}
-                                >
-                                    <route.icon className="h-4 w-4" />
-                                    {route.label}
-                                </Button>
-                            </Link>
-                        ))}
-                    </div>
+                    <nav aria-label="Vendor navigation">
+                        <div className="space-y-1">
+                            {routes.map((route) => {
+                                const isActive = pathname.startsWith(route.pattern);
+                                return (
+                                    <Link
+                                        key={route.href}
+                                        to={route.href}
+                                        aria-current={isActive ? 'page' : undefined}
+                                    >
+                                        <Button
+                                            variant={isActive ? 'secondary' : 'ghost'}
+                                            className={cn(
+                                                'w-full justify-start gap-2',
+                                                isActive && 'font-semibold text-primary bg-primary/10'
+                                            )}
+                                        >
+                                            <route.icon className="h-4 w-4" aria-hidden="true" />
+                                            {route.label}
+                                        </Button>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </nav>
                 </ScrollAreaStub>
             </div>
             <div className="absolute bottom-4 left-0 w-full px-3">
