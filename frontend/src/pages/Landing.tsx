@@ -11,7 +11,6 @@ import { BRAND } from '@/lib/constants';
 
 const EarlyBird = lazy(() => import('@/components/home/EarlyBird'));
 const Gallery = lazy(() => import('@/components/home/Gallery'));
-const Testimonials = lazy(() => import('@/components/home/Testimonials'));
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -389,11 +388,6 @@ export default function Landing() {
                     </div>
                 </div>
             </section>
-
-            {/* ── Testimonials ─────────────────────────────────────────── */}
-            <Suspense fallback={<div className="h-64 flex items-center justify-center text-muted-foreground">Loading…</div>}>
-                <Testimonials />
-            </Suspense>
 
             {/* ── Gallery ──────────────────────────────────────────────── */}
             <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading Gallery…</div>}>
