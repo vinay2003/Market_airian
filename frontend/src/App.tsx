@@ -22,6 +22,7 @@ const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'));
 // Lazy Load Public Pages
 const About = lazy(() => import('@/pages/public/About'));
 const Legal = lazy(() => import('@/pages/public/Legal'));
+const Gallery = lazy(() => import('@/pages/public/Gallery'));
 
 // Lazy Load Vendor Pages
 const VendorDashboard = lazy(() => import('@/pages/vendor/Dashboard'));
@@ -51,6 +52,7 @@ function App() {
               <Route path="/" element={<Landing />} />
               <Route path="/about" element={<About />} />
               <Route path="/legal" element={<Legal />} />
+              <Route path="/gallery" element={<Gallery />} />
               <Route path="/vendors" element={<BrowseVendors />} />
               <Route path="/vendor/:id" element={<VendorPublicProfile />} />
             </Route>
