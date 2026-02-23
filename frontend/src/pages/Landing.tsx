@@ -56,12 +56,6 @@ const SERVICES = [
     { icon: Sparkles, label: 'Makeup & Grooming' },
 ];
 
-const STATS = [
-    { value: '500+', label: 'Verified Vendors' },
-    { value: '10k+', label: 'Events Planned' },
-    { value: '4.9★', label: 'Average Rating' },
-    { value: '24/7', label: 'Customer Support' },
-];
 
 const fadeUp: Variants = {
     hidden: { opacity: 0, y: 28 },
@@ -155,20 +149,7 @@ export default function Landing() {
                         </Link>
                     </motion.div>
 
-                    {/* Stats strip */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.8, delay: 0.7 }}
-                        className="flex flex-wrap justify-center gap-x-6 gap-y-6 pt-8 max-w-lg mx-auto md:max-w-full md:gap-x-10"
-                    >
-                        {STATS.map(({ value, label }) => (
-                            <div key={label} className="text-center w-[40%] md:w-auto">
-                                <p className="text-2xl md:text-3xl font-bold text-amber-300 drop-shadow-md">{value}</p>
-                                <p className="text-[10px] md:text-xs text-gray-200 mt-1 uppercase tracking-wider font-semibold">{label}</p>
-                            </div>
-                        ))}
-                    </motion.div>
+
                 </div>
             </section>
 
