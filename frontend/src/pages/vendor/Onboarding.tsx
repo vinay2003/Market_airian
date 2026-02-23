@@ -455,26 +455,69 @@ export default function VendorOnboarding() {
                             )}
 
                             {step < 3 ? (
-                                <button
+                                <motion.button
+                                    whileHover={{ scale: 1.02, backgroundColor: '#1e293b' }}
+                                    whileTap={{ scale: 0.98 }}
                                     type="button"
                                     onClick={handleNext}
-                                    className="sm:flex-1 w-full h-14 text-lg bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800 transition-all flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 active:scale-[0.98]"
+                                    className="sm:flex-1 w-full h-14 text-lg bg-slate-900 text-white rounded-full font-medium transition-all flex items-center justify-center shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)]"
                                 >
                                     Continue <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-                                </button>
+                                </motion.button>
                             ) : (
-                                <button
+                                <motion.button
+                                    whileHover={!loading ? { scale: 1.02, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' } : {}}
+                                    whileTap={!loading ? { scale: 0.98 } : {}}
                                     type="button"
                                     onClick={handleSubmit}
                                     disabled={loading}
-                                    className="sm:flex-1 w-full h-14 text-lg bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800 transition-all flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 active:scale-[0.98]"
+                                    className={`relative sm:flex-1 w-full h-14 text-lg rounded-full font-bold transition-all flex items-center justify-center overflow-hidden ${loading
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : 'bg-primary text-white shadow-xl shadow-primary/25 hover:bg-primary/90'
+                                        }`}
                                 >
-                                    {loading ? (
-                                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" /> {statusMsg || 'Creating account…'}</>
-                                    ) : (
-                                        'Create Account'
+                                    <AnimatePresence mode="wait">
+                                        {loading ? (
+                                            <motion.div
+                                                key="loading"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                className="flex items-center gap-3"
+                                            >
+                                                <div className="relative w-5 h-5">
+                                                    <Loader2 className="absolute inset-0 animate-spin text-primary" aria-hidden="true" />
+                                                    <motion.div
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: [0, 1.2, 1] }}
+                                                        className="absolute inset-0 bg-primary/10 rounded-full blur-sm"
+                                                    />
+                                                </div>
+                                                <span className="text-slate-600 font-semibold">{statusMsg || 'Creating account…'}</span>
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                key="idle"
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 1.1 }}
+                                                className="flex items-center gap-2"
+                                            >
+                                                Create Account
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    {/* Success/Progress Background Effect */}
+                                    {loading && (
+                                        <motion.div
+                                            initial={{ x: '-100%' }}
+                                            animate={{ x: '0%' }}
+                                            transition={{ duration: 3, ease: 'linear' }}
+                                            className="absolute bottom-0 left-0 h-1 bg-primary/30 w-full"
+                                        />
                                     )}
-                                </button>
+                                </motion.button>
                             )}
                         </div>
 

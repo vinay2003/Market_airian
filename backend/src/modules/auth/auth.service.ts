@@ -71,7 +71,13 @@ export class AuthService {
     }
 
     async registerVendor(data: any): Promise<{ accessToken: string; vendor: User }> {
-        const { email, password, phone, firstName, lastName, ...profileData } = data;
+        const {
+            email, password, phone, firstName, lastName,
+            businessName, businessType, description, city, address,
+            pincode, country, state, locality, plotNo, landmark,
+            yearsInBusiness, acquisitionChannels, serviceCategories,
+            eventVolume, avgBookingPrice
+        } = data;
 
         // Check for existing user by email or phone
         const existingEmail = await this.userRepository.findOne({ where: { email } });
@@ -80,7 +86,7 @@ export class AuthService {
         const existingPhone = await this.userRepository.findOne({ where: { phone } });
         if (existingPhone) throw new ConflictException('Phone number is already registered');
 
-        // Hash password (use slightly fewer rounds for better performance if requested, but 10 is secure)
+        // Hash password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -93,18 +99,30 @@ export class AuthService {
             password: hashedPassword,
             role: UserRole.VENDOR,
             isVerified: true,
-            city: profileData.city,
+            city,
         });
 
         const savedUser = await this.userRepository.save(newUser);
 
         // Create vendor profile in same request
         const profile = this.vendorProfileRepository.create({
-            ...profileData,
             user: savedUser,
-            businessName: profileData.businessName,
-            serviceCategories: profileData.serviceCategories,
-            address: profileData.address,
+            businessName,
+            businessType,
+            description,
+            city,
+            address,
+            pincode,
+            country,
+            state,
+            locality,
+            plotNo,
+            landmark,
+            yearsInBusiness,
+            acquisitionChannels,
+            serviceCategories,
+            eventVolume,
+            avgBookingPrice,
         });
         await this.vendorProfileRepository.save(profile);
 
