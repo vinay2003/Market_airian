@@ -6,7 +6,7 @@ import { User, UserRole } from '../users/user.entity';
 import { Otp } from './otp.entity';
 import { VendorProfile } from '../vendors/vendor-profile.entity';
 import { SmsService } from '../sms/sms.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -99,7 +99,7 @@ export class AuthService {
             password: hashedPassword,
             role: UserRole.VENDOR,
             isVerified: true,
-            city,
+            city: city || null,
         });
 
         const savedUser = await this.userRepository.save(newUser);
@@ -107,22 +107,22 @@ export class AuthService {
         // Create vendor profile in same request
         const profile = this.vendorProfileRepository.create({
             user: savedUser,
-            businessName,
-            businessType,
-            description,
-            city,
-            address,
-            pincode,
-            country,
-            state,
-            locality,
-            plotNo,
-            landmark,
-            yearsInBusiness,
-            acquisitionChannels,
-            serviceCategories,
-            eventVolume,
-            avgBookingPrice,
+            businessName: businessName || 'My Business',
+            businessType: businessType || 'individual',
+            description: description || '',
+            city: city || '',
+            address: address || '',
+            pincode: pincode || '',
+            country: country || 'India',
+            state: state || '',
+            locality: locality || '',
+            plotNo: plotNo || '',
+            landmark: landmark || '',
+            yearsInBusiness: isNaN(parseInt(yearsInBusiness)) ? 0 : parseInt(yearsInBusiness),
+            acquisitionChannels: Array.isArray(acquisitionChannels) ? acquisitionChannels : [],
+            serviceCategories: Array.isArray(serviceCategories) ? serviceCategories : [],
+            eventVolume: eventVolume || '',
+            avgBookingPrice: avgBookingPrice || '',
         });
         await this.vendorProfileRepository.save(profile);
 

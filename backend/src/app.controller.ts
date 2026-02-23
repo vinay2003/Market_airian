@@ -12,6 +12,6 @@ export class AppController {
 
   @Get('ping')
   ping() {
-    return { status: 'alive', version: '1.0.1' };
+    return { status: 'alive', version: '1.0.2', timestamp: '2026-02-23T23:15:00' };
   }
 }
