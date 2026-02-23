@@ -1,10 +1,20 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserRole } from '../users/user.entity';
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
+
+    @Get()
+    status() {
+        return { message: 'Auth service is online', success: true };
+    }
+
+    @Get('health')
+    health() {
+        return { status: 'ok', timestamp: new Date().toISOString() };
+    }
 
     @Post('send-otp')
     async sendOtp(@Body('phone') phone: string) {
