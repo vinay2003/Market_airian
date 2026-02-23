@@ -4,8 +4,9 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserRole } from '../users/user.entity';
 import { Otp } from './otp.entity';
+import { VendorProfile } from '../vendors/vendor-profile.entity';
 import { SmsService } from '../sms/sms.service';
-import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +15,8 @@ export class AuthService {
         private userRepository: Repository<User>,
         @InjectRepository(Otp)
         private otpRepository: Repository<Otp>,
+        @InjectRepository(VendorProfile)
+        private vendorProfileRepository: Repository<VendorProfile>,
         private jwtService: JwtService,
         private smsService: SmsService,
     ) { }
@@ -68,7 +71,7 @@ export class AuthService {
     }
 
     async registerVendor(data: any): Promise<{ accessToken: string; vendor: User }> {
-        const { email, password, phone, businessName, category, city } = data;
+        const { email, password, phone, firstName, lastName, ...profileData } = data;
 
         // Check for existing user by email or phone
         const existingEmail = await this.userRepository.findOne({ where: { email } });
@@ -77,7 +80,7 @@ export class AuthService {
         const existingPhone = await this.userRepository.findOne({ where: { phone } });
         if (existingPhone) throw new ConflictException('Phone number is already registered');
 
-        // Hash password
+        // Hash password (use slightly fewer rounds for better performance if requested, but 10 is secure)
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -85,14 +88,25 @@ export class AuthService {
         const newUser = this.userRepository.create({
             email,
             phone,
+            firstName,
+            lastName,
             password: hashedPassword,
             role: UserRole.VENDOR,
-            isVerified: true, // Auto verify for now, can add email verification later
-            city,
-            // businessName and category are handled in the profile creation later
+            isVerified: true,
+            city: profileData.city,
         });
 
         const savedUser = await this.userRepository.save(newUser);
+
+        // Create vendor profile in same request
+        const profile = this.vendorProfileRepository.create({
+            ...profileData,
+            user: savedUser,
+            businessName: profileData.businessName,
+            serviceCategories: profileData.serviceCategories,
+            address: profileData.address,
+        });
+        await this.vendorProfileRepository.save(profile);
 
         return {
             accessToken: this.generateToken(savedUser),

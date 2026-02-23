@@ -92,26 +92,28 @@ export default function VendorOnboarding() {
         setMsg('Creating your account…');
         setError('');
         try {
-            const authRes = await api.post('/auth/register-vendor', {
-                email: form.email, password: form.password, phone: form.phone,
-                businessName: form.businessName, category: form.serviceCategories[0] || 'Other', city: form.city,
-            });
-            const { accessToken, vendor } = authRes.data;
-            if (accessToken) login(accessToken, vendor);
-
-            setMsg('Saving your profile…');
-            await api.post('/vendors/profile', {
+            // Optimized: Unified registration and profile creation in a single request
+            const registrationData = {
                 ...form,
                 yearsInBusiness: form.yearsInBusiness ? parseInt(form.yearsInBusiness) : 0,
                 acquisitionChannels: form.acquisitionChannels
                     ? form.acquisitionChannels.split(',').map(s => s.trim())
                     : [],
                 address: `${form.plotNo}, ${form.locality}, ${form.city}, ${form.state}, ${form.pincode}, ${form.country}`,
-            }, { headers: { Authorization: `Bearer ${accessToken}` } });
+                category: form.serviceCategories[0] || 'Other',
+            };
+
+            const authRes = await api.post('/auth/register-vendor', registrationData);
+
+            const { accessToken, vendor } = authRes.data;
+            if (accessToken) {
+                login(accessToken, vendor);
+            }
 
             setMsg('Success! Redirecting…');
-            setTimeout(() => navigate('/vendor/dashboard'), 1000);
+            setTimeout(() => navigate('/vendor/dashboard'), 800);
         } catch (e: any) {
+            console.error('Registration error:', e);
             setError(e.response?.data?.message || 'Registration failed. Please check your inputs.');
         } finally {
             setLoading(false);

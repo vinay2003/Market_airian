@@ -18,9 +18,9 @@ import { EventsModule } from './modules/events/events.module'; // Added this imp
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
-        synchronize: true, // Changed from `synchronize: true, // Disable in production`
-        dropSchema: true, // Changed from `dropSchema: true, // Temporary dev reset` to `dropSchema: true, // DEV ONLY`
-        ssl: { rejectUnauthorized: false }, // Added this line
+        synchronize: configService.get<string>('NODE_ENV') !== 'production',
+        dropSchema: false,
+        ssl: { rejectUnauthorized: false },
       }),
       inject: [ConfigService],
     }),

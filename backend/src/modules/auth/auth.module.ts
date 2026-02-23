@@ -6,13 +6,14 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { User } from '../users/user.entity';
 import { Otp } from './otp.entity';
+import { VendorProfile } from '../vendors/vendor-profile.entity';
 import { JwtStrategy } from './jwt.strategy';
 
 import { SmsModule } from '../sms/sms.module';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([User, Otp]),
+        TypeOrmModule.forFeature([User, Otp, VendorProfile]),
         JwtModule.registerAsync({
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => ({
