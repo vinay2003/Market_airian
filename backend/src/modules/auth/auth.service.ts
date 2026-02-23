@@ -4,8 +4,9 @@ import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserRole } from '../users/user.entity';
 import { Otp } from './otp.entity';
-import { VendorProfile } from '../vendors/vendor-profile.entity';
+import { VendorProfile, BusinessType } from '../vendors/vendor-profile.entity';
 import { SmsService } from '../sms/sms.service';
+import { RegisterVendorDto } from './dto/register-vendor.dto';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -70,7 +71,7 @@ export class AuthService {
         return { accessToken: this.generateToken(user), user };
     }
 
-    async registerVendor(data: any): Promise<{ accessToken: string; vendor: User }> {
+    async registerVendor(data: RegisterVendorDto): Promise<{ accessToken: string; vendor: User }> {
         const {
             email, password, phone, firstName, lastName,
             businessName, businessType, description, city, address,
@@ -99,7 +100,7 @@ export class AuthService {
             password: hashedPassword,
             role: UserRole.VENDOR,
             isVerified: true,
-            city: city || null,
+            city: city || undefined,
         });
 
         const savedUser = await this.userRepository.save(newUser);
@@ -108,7 +109,7 @@ export class AuthService {
         const profile = this.vendorProfileRepository.create({
             user: savedUser,
             businessName: businessName || 'My Business',
-            businessType: businessType || 'individual',
+            businessType: (businessType as BusinessType) || BusinessType.INDIVIDUAL,
             description: description || '',
             city: city || '',
             address: address || '',
@@ -118,9 +119,9 @@ export class AuthService {
             locality: locality || '',
             plotNo: plotNo || '',
             landmark: landmark || '',
-            yearsInBusiness: isNaN(parseInt(yearsInBusiness)) ? 0 : parseInt(yearsInBusiness),
-            acquisitionChannels: Array.isArray(acquisitionChannels) ? acquisitionChannels : [],
-            serviceCategories: Array.isArray(serviceCategories) ? serviceCategories : [],
+            yearsInBusiness: yearsInBusiness || 0,
+            acquisitionChannels: acquisitionChannels || [],
+            serviceCategories: serviceCategories || [],
             eventVolume: eventVolume || '',
             avgBookingPrice: avgBookingPrice || '',
         });

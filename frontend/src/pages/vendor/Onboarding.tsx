@@ -208,326 +208,333 @@ export default function VendorOnboarding() {
                     </div>
 
                     {/* Sliding form steps */}
-                    <AnimatePresence mode="wait" custom={1}>
-                        <motion.div
-                            key={step}
-                            custom={1}
-                            variants={slideVariants}
-                            initial="enter"
-                            animate="center"
-                            exit="exit"
-                            transition={{ duration: 0.25, ease: 'easeOut' }}
-                            className="space-y-6"
-                        >
-                            {/* ── Step 1: Account Info ─────────────────── */}
-                            {step === 1 && (
-                                <div className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className={LABEL}>First Name <span className="text-red-500">*</span></label>
-                                            <input id="firstName" className={INPUT} value={form.firstName} onChange={onInput} placeholder="Rahul" />
-                                        </div>
-                                        <div>
-                                            <label className={LABEL}>Last Name <span className="text-red-500">*</span></label>
-                                            <input id="lastName" className={INPUT} value={form.lastName} onChange={onInput} placeholder="Sharma" />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className={LABEL}>Email Address <span className="text-red-500">*</span></label>
-                                        <input id="email" type="email" className={INPUT} value={form.email} onChange={onInput} placeholder="you@company.com" autoComplete="email" />
-                                    </div>
-                                    <div>
-                                        <label className={LABEL}>Phone Number <span className="text-red-500">*</span></label>
-                                        <input id="phone" type="tel" className={INPUT} value={form.phone} onChange={onInput} placeholder="9876543210" />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className={LABEL}>Password <span className="text-red-500">*</span></label>
-                                            <div className="relative">
-                                                <input id="password" type={showPwd ? 'text' : 'password'} className={`${INPUT} pr-10`} value={form.password} onChange={onInput} placeholder="Min. 8 chars" />
-                                                <button type="button" onClick={() => setShowPwd(p => !p)} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-2" aria-label={showPwd ? 'Hide password' : 'Show password'}>
-                                                    {showPwd ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
-                                                </button>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (step < 3) handleNext();
+                            else handleSubmit();
+                        }}
+                        className="space-y-10"
+                    >
+                        <AnimatePresence mode="wait" custom={1}>
+                            <motion.div
+                                key={step}
+                                custom={1}
+                                variants={slideVariants}
+                                initial="enter"
+                                animate="center"
+                                exit="exit"
+                                transition={{ duration: 0.25, ease: 'easeOut' }}
+                                className="space-y-6"
+                            >
+                                {/* ── Step 1: Account Info ─────────────────── */}
+                                {step === 1 && (
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={LABEL}>First Name <span className="text-red-500">*</span></label>
+                                                <input id="firstName" className={INPUT} value={form.firstName} onChange={onInput} placeholder="Rahul" />
+                                            </div>
+                                            <div>
+                                                <label className={LABEL}>Last Name <span className="text-red-500">*</span></label>
+                                                <input id="lastName" className={INPUT} value={form.lastName} onChange={onInput} placeholder="Sharma" />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className={LABEL}>Confirm <span className="text-red-500">*</span></label>
-                                            <input id="confirmPassword" type={showPwd ? 'text' : 'password'} className={INPUT} value={form.confirmPassword} onChange={onInput} placeholder="••••••••" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* ── Step 2: Business Details ──────────────── */}
-                            {step === 2 && (
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className={LABEL}>Business Name <span className="text-red-500">*</span></label>
-                                        <input id="businessName" className={INPUT} value={form.businessName} onChange={onInput} placeholder="e.g. Royal Weddings Studio" />
-                                    </div>
-                                    <div>
-                                        <label className={LABEL}>Business Description <span className="text-red-500">*</span></label>
-                                        <textarea
-                                            id="description"
-                                            value={form.description}
-                                            onChange={onInput}
-                                            placeholder="What services do you offer? What makes you stand out?"
-                                            rows={2}
-                                            className="w-full text-base border-b-2 border-gray-200 focus:border-slate-900 outline-none bg-transparent transition-colors placeholder:text-gray-300 resize-none pt-2"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className={LABEL}>Business Type</label>
-                                            <Select onValueChange={v => set('businessType', v)} defaultValue={form.businessType}>
-                                                <SelectTrigger className="h-12 border-0 border-b-2 border-gray-200 focus:border-slate-900 rounded-none px-0 bg-transparent text-base">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="individual">Freelancer</SelectItem>
-                                                    <SelectItem value="company">Company</SelectItem>
-                                                    <SelectItem value="agency">Agency</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                            <label className={LABEL}>Email Address <span className="text-red-500">*</span></label>
+                                            <input id="email" type="email" className={INPUT} value={form.email} onChange={onInput} placeholder="you@company.com" autoComplete="email" />
                                         </div>
                                         <div>
-                                            <label className={LABEL}>Years of Exp.</label>
-                                            <input id="yearsInBusiness" type="number" className={INPUT} value={form.yearsInBusiness} onChange={onInput} placeholder="e.g. 3" />
+                                            <label className={LABEL}>Phone Number <span className="text-red-500">*</span></label>
+                                            <input id="phone" type="tel" className={INPUT} value={form.phone} onChange={onInput} placeholder="9876543210" />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={LABEL}>Password <span className="text-red-500">*</span></label>
+                                                <div className="relative">
+                                                    <input id="password" type={showPwd ? 'text' : 'password'} className={`${INPUT} pr-10`} value={form.password} onChange={onInput} placeholder="Min. 8 chars" />
+                                                    <button type="button" onClick={() => setShowPwd(p => !p)} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-2" aria-label={showPwd ? 'Hide password' : 'Show password'}>
+                                                        {showPwd ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className={LABEL}>Confirm <span className="text-red-500">*</span></label>
+                                                <input id="confirmPassword" type={showPwd ? 'text' : 'password'} className={INPUT} value={form.confirmPassword} onChange={onInput} placeholder="••••••••" />
+                                            </div>
                                         </div>
                                     </div>
+                                )}
 
-                                    {/* Address */}
-                                    <div className="pt-2">
-                                        <p className="uppercase text-xs font-bold tracking-wider text-gray-400 flex items-center gap-1.5 mb-4">
-                                            <Building2 className="w-3.5 h-3.5" aria-hidden="true" /> Business Address
+                                {/* ── Step 2: Business Details ──────────────── */}
+                                {step === 2 && (
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className={LABEL}>Business Name <span className="text-red-500">*</span></label>
+                                            <input id="businessName" className={INPUT} value={form.businessName} onChange={onInput} placeholder="e.g. Royal Weddings Studio" />
+                                        </div>
+                                        <div>
+                                            <label className={LABEL}>Business Description <span className="text-red-500">*</span></label>
+                                            <textarea
+                                                id="description"
+                                                value={form.description}
+                                                onChange={onInput}
+                                                placeholder="What services do you offer? What makes you stand out?"
+                                                rows={2}
+                                                className="w-full text-base border-b-2 border-gray-200 focus:border-slate-900 outline-none bg-transparent transition-colors placeholder:text-gray-300 resize-none pt-2"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={LABEL}>Business Type</label>
+                                                <Select onValueChange={v => set('businessType', v)} defaultValue={form.businessType}>
+                                                    <SelectTrigger className="h-12 border-0 border-b-2 border-gray-200 focus:border-slate-900 rounded-none px-0 bg-transparent text-base">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="individual">Freelancer</SelectItem>
+                                                        <SelectItem value="company">Company</SelectItem>
+                                                        <SelectItem value="agency">Agency</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div>
+                                                <label className={LABEL}>Years of Exp.</label>
+                                                <input id="yearsInBusiness" type="number" className={INPUT} value={form.yearsInBusiness} onChange={onInput} placeholder="e.g. 3" />
+                                            </div>
+                                        </div>
+
+                                        {/* Address */}
+                                        <div className="pt-2">
+                                            <p className="uppercase text-xs font-bold tracking-wider text-gray-400 flex items-center gap-1.5 mb-4">
+                                                <Building2 className="w-3.5 h-3.5" aria-hidden="true" /> Business Address
+                                            </p>
+                                            <div className="space-y-5">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className={LABEL}>Country <span className="text-red-500">*</span></label>
+                                                        <Select onValueChange={v => set('country', v)} defaultValue={form.country}>
+                                                            <SelectTrigger className="h-12 border-0 border-b-2 border-gray-200 focus:border-slate-900 rounded-none px-0 bg-transparent text-base">
+                                                                <SelectValue placeholder="Select" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="India">India</SelectItem>
+                                                                <SelectItem value="Other">Other</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div>
+                                                        <label className={LABEL}>State/UT <span className="text-red-500">*</span></label>
+                                                        <input id="state" className={INPUT} value={form.state} onChange={onInput} placeholder="Bihar" />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className={LABEL}>City <span className="text-red-500">*</span></label>
+                                                        <input id="city" className={INPUT} value={form.city} onChange={onInput} placeholder="Patna" />
+                                                    </div>
+                                                    <div>
+                                                        <label className={LABEL}>Pincode <span className="text-red-500">*</span></label>
+                                                        <input id="pincode" className={INPUT} value={form.pincode} onChange={onInput} placeholder="800001" />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className={LABEL}>Plot / Street <span className="text-red-500">*</span></label>
+                                                        <input id="plotNo" className={INPUT} value={form.plotNo} onChange={onInput} placeholder="Plot No, Street" />
+                                                    </div>
+                                                    <div>
+                                                        <label className={LABEL}>GST Number</label>
+                                                        <input id="gstNumber" className={INPUT} value={form.gstNumber} onChange={onInput} placeholder="GSTIN (optional)" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ── Step 3: Service Profile ───────────────── */}
+                                {step === 3 && (
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className={LABEL}>Service Categories <span className="text-red-500">*</span></label>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <button className="w-full flex items-center justify-between border-b-2 border-gray-200 hover:border-slate-900 transition-colors py-3 text-base bg-transparent outline-none focus:border-slate-900">
+                                                        {form.serviceCategories.length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {form.serviceCategories.map(c => (
+                                                                    <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-gray-300">Select categories…</span>
+                                                        )}
+                                                        <ChevronsUpDown className="ml-2 h-4 w-4 text-gray-400 shrink-0" aria-hidden="true" />
+                                                    </button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                                    <Command>
+                                                        <CommandInput placeholder="Search category…" />
+                                                        <CommandList>
+                                                            <CommandEmpty>No category found.</CommandEmpty>
+                                                            <CommandGroup>
+                                                                {SERVICE_CATEGORIES.map(cat => (
+                                                                    <CommandItem key={cat} value={cat} onSelect={() => {
+                                                                        const current = form.serviceCategories;
+                                                                        set('serviceCategories', current.includes(cat)
+                                                                            ? current.filter(c => c !== cat)
+                                                                            : [...current, cat]);
+                                                                    }}>
+                                                                        <Check className={`mr-2 h-4 w-4 ${form.serviceCategories.includes(cat) ? 'opacity-100' : 'opacity-0'}`} aria-hidden="true" />
+                                                                        {cat}
+                                                                    </CommandItem>
+                                                                ))}
+                                                            </CommandGroup>
+                                                        </CommandList>
+                                                    </Command>
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className={LABEL}>Monthly Events <span className="text-red-500">*</span></label>
+                                                <Select onValueChange={v => set('eventVolume', v)} defaultValue={form.eventVolume}>
+                                                    <SelectTrigger className="h-12 border-0 border-b-2 border-gray-200 focus:border-slate-900 rounded-none px-0 bg-transparent text-base">
+                                                        <SelectValue placeholder="Select" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="0-5">0–5 events</SelectItem>
+                                                        <SelectItem value="6-20">6–20 events</SelectItem>
+                                                        <SelectItem value="21+">21+ events</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div>
+                                                <label className={LABEL}>Avg. Price <span className="text-red-500">*</span></label>
+                                                <Select onValueChange={v => set('avgBookingPrice', v)} defaultValue={form.avgBookingPrice}>
+                                                    <SelectTrigger className="h-12 border-0 border-b-2 border-gray-200 focus:border-slate-900 rounded-none px-0 bg-transparent text-base">
+                                                        <SelectValue placeholder="Select" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="low">Budget (&lt;₹25k)</SelectItem>
+                                                        <SelectItem value="medium">Standard (₹25k–1L)</SelectItem>
+                                                        <SelectItem value="high">Premium (&gt;₹1L)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+
+                                        <p className="text-xs text-gray-400 leading-relaxed border-t pt-4">
+                                            By clicking "Create Account" you agree to {BRAND.fullName}'s Terms of Service and Privacy Policy.
+                                            Your profile will go live after a quick review.
                                         </p>
-                                        <div className="space-y-5">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className={LABEL}>Country <span className="text-red-500">*</span></label>
-                                                    <Select onValueChange={v => set('country', v)} defaultValue={form.country}>
-                                                        <SelectTrigger className="h-12 border-0 border-b-2 border-gray-200 focus:border-slate-900 rounded-none px-0 bg-transparent text-base">
-                                                            <SelectValue placeholder="Select" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="India">India</SelectItem>
-                                                            <SelectItem value="Other">Other</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div>
-                                                    <label className={LABEL}>State/UT <span className="text-red-500">*</span></label>
-                                                    <input id="state" className={INPUT} value={form.state} onChange={onInput} placeholder="Bihar" />
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className={LABEL}>City <span className="text-red-500">*</span></label>
-                                                    <input id="city" className={INPUT} value={form.city} onChange={onInput} placeholder="Patna" />
-                                                </div>
-                                                <div>
-                                                    <label className={LABEL}>Pincode <span className="text-red-500">*</span></label>
-                                                    <input id="pincode" className={INPUT} value={form.pincode} onChange={onInput} placeholder="800001" />
-                                                </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className={LABEL}>Plot / Street <span className="text-red-500">*</span></label>
-                                                    <input id="plotNo" className={INPUT} value={form.plotNo} onChange={onInput} placeholder="Plot No, Street" />
-                                                </div>
-                                                <div>
-                                                    <label className={LABEL}>GST Number</label>
-                                                    <input id="gstNumber" className={INPUT} value={form.gstNumber} onChange={onInput} placeholder="GSTIN (optional)" />
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
 
-                            {/* ── Step 3: Service Profile ───────────────── */}
-                            {step === 3 && (
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className={LABEL}>Service Categories <span className="text-red-500">*</span></label>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <button className="w-full flex items-center justify-between border-b-2 border-gray-200 hover:border-slate-900 transition-colors py-3 text-base bg-transparent outline-none focus:border-slate-900">
-                                                    {form.serviceCategories.length > 0 ? (
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {form.serviceCategories.map(c => (
-                                                                <Badge key={c} variant="secondary" className="text-xs">{c}</Badge>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-gray-300">Select categories…</span>
-                                                    )}
-                                                    <ChevronsUpDown className="ml-2 h-4 w-4 text-gray-400 shrink-0" aria-hidden="true" />
-                                                </button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                                <Command>
-                                                    <CommandInput placeholder="Search category…" />
-                                                    <CommandList>
-                                                        <CommandEmpty>No category found.</CommandEmpty>
-                                                        <CommandGroup>
-                                                            {SERVICE_CATEGORIES.map(cat => (
-                                                                <CommandItem key={cat} value={cat} onSelect={() => {
-                                                                    const current = form.serviceCategories;
-                                                                    set('serviceCategories', current.includes(cat)
-                                                                        ? current.filter(c => c !== cat)
-                                                                        : [...current, cat]);
-                                                                }}>
-                                                                    <Check className={`mr-2 h-4 w-4 ${form.serviceCategories.includes(cat) ? 'opacity-100' : 'opacity-0'}`} aria-hidden="true" />
-                                                                    {cat}
-                                                                </CommandItem>
-                                                            ))}
-                                                        </CommandGroup>
-                                                    </CommandList>
-                                                </Command>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
+                        {/* Error */}
+                        {error && (
+                            <motion.p
+                                initial={{ opacity: 0, y: -6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="text-sm text-red-500 font-medium"
+                            >
+                                {error}
+                            </motion.p>
+                        )}
 
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className={LABEL}>Monthly Events <span className="text-red-500">*</span></label>
-                                            <Select onValueChange={v => set('eventVolume', v)} defaultValue={form.eventVolume}>
-                                                <SelectTrigger className="h-12 border-0 border-b-2 border-gray-200 focus:border-slate-900 rounded-none px-0 bg-transparent text-base">
-                                                    <SelectValue placeholder="Select" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="0-5">0–5 events</SelectItem>
-                                                    <SelectItem value="6-20">6–20 events</SelectItem>
-                                                    <SelectItem value="21+">21+ events</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div>
-                                            <label className={LABEL}>Avg. Price <span className="text-red-500">*</span></label>
-                                            <Select onValueChange={v => set('avgBookingPrice', v)} defaultValue={form.avgBookingPrice}>
-                                                <SelectTrigger className="h-12 border-0 border-b-2 border-gray-200 focus:border-slate-900 rounded-none px-0 bg-transparent text-base">
-                                                    <SelectValue placeholder="Select" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="low">Budget (&lt;₹25k)</SelectItem>
-                                                    <SelectItem value="medium">Standard (₹25k–1L)</SelectItem>
-                                                    <SelectItem value="high">Premium (&gt;₹1L)</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
+                        {/* Navigation */}
+                        <div className="flex flex-col gap-4 pt-4">
+                            <div className="flex flex-col-reverse sm:flex-row gap-4 w-full">
+                                {step > 1 ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => { setStep(s => s - 1); setError(''); }}
+                                        disabled={loading}
+                                        className="sm:flex-1 w-full h-14 text-lg bg-gray-100/80 text-gray-700 border border-gray-200 rounded-full font-medium hover:bg-gray-200 hover:text-gray-900 transition-all flex items-center justify-center disabled:opacity-50 active:scale-[0.98]"
+                                    >
+                                        <ArrowLeft className="mr-2 h-5 w-5" aria-hidden="true" /> Back
+                                    </button>
+                                ) : (
+                                    <div className="hidden sm:block sm:flex-1" />
+                                )}
 
-                                    <p className="text-xs text-gray-400 leading-relaxed border-t pt-4">
-                                        By clicking "Create Account" you agree to {BRAND.fullName}'s Terms of Service and Privacy Policy.
-                                        Your profile will go live after a quick review.
-                                    </p>
-                                </div>
-                            )}
-                        </motion.div>
-                    </AnimatePresence>
-
-                    {/* Error */}
-                    {error && (
-                        <motion.p
-                            initial={{ opacity: 0, y: -6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-sm text-red-500 font-medium"
-                        >
-                            {error}
-                        </motion.p>
-                    )}
-
-                    {/* Navigation */}
-                    <div className="flex flex-col gap-4 pt-4">
-                        <div className="flex flex-col-reverse sm:flex-row gap-4 w-full">
-                            {step > 1 ? (
-                                <button
-                                    type="button"
-                                    onClick={() => { setStep(s => s - 1); setError(''); }}
-                                    disabled={loading}
-                                    className="sm:flex-1 w-full h-14 text-lg bg-gray-100/80 text-gray-700 border border-gray-200 rounded-full font-medium hover:bg-gray-200 hover:text-gray-900 transition-all flex items-center justify-center disabled:opacity-50 active:scale-[0.98]"
-                                >
-                                    <ArrowLeft className="mr-2 h-5 w-5" aria-hidden="true" /> Back
-                                </button>
-                            ) : (
-                                <div className="hidden sm:block sm:flex-1" />
-                            )}
-
-                            {step < 3 ? (
-                                <motion.button
-                                    whileHover={{ scale: 1.02, backgroundColor: '#1e293b' }}
-                                    whileTap={{ scale: 0.98 }}
-                                    type="button"
-                                    onClick={handleNext}
-                                    className="sm:flex-1 w-full h-14 text-lg bg-slate-900 text-white rounded-full font-medium transition-all flex items-center justify-center shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)]"
-                                >
-                                    Continue <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-                                </motion.button>
-                            ) : (
-                                <motion.button
-                                    whileHover={!loading ? { scale: 1.02, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' } : {}}
-                                    whileTap={!loading ? { scale: 0.98 } : {}}
-                                    type="button"
-                                    onClick={handleSubmit}
-                                    disabled={loading}
-                                    className={`relative sm:flex-1 w-full h-14 text-lg rounded-full font-bold transition-all flex items-center justify-center overflow-hidden ${loading
+                                {step < 3 ? (
+                                    <motion.button
+                                        whileHover={{ scale: 1.02, backgroundColor: '#1e293b' }}
+                                        whileTap={{ scale: 0.98 }}
+                                        type="submit"
+                                        className="sm:flex-1 w-full h-14 text-lg bg-slate-900 text-white rounded-full font-medium transition-all flex items-center justify-center shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)]"
+                                    >
+                                        Continue <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+                                    </motion.button>
+                                ) : (
+                                    <motion.button
+                                        whileHover={!loading ? { scale: 1.02, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' } : {}}
+                                        whileTap={!loading ? { scale: 0.98 } : {}}
+                                        type="submit"
+                                        disabled={loading}
+                                        className={`relative sm:flex-1 w-full h-14 text-lg rounded-full font-bold transition-all flex items-center justify-center overflow-hidden ${loading
                                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                             : 'bg-primary text-white shadow-xl shadow-primary/25 hover:bg-primary/90'
-                                        }`}
-                                >
-                                    <AnimatePresence mode="wait">
-                                        {loading ? (
+                                            }`}
+                                    >
+                                        <AnimatePresence mode="wait">
+                                            {loading ? (
+                                                <motion.div
+                                                    key="loading"
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: -10 }}
+                                                    className="flex items-center gap-3"
+                                                >
+                                                    <div className="relative w-5 h-5">
+                                                        <Loader2 className="absolute inset-0 animate-spin text-primary" aria-hidden="true" />
+                                                        <motion.div
+                                                            initial={{ scale: 0 }}
+                                                            animate={{ scale: [0, 1.2, 1] }}
+                                                            className="absolute inset-0 bg-primary/10 rounded-full blur-sm"
+                                                        />
+                                                    </div>
+                                                    <span className="text-slate-600 font-semibold">{statusMsg || 'Creating account…'}</span>
+                                                </motion.div>
+                                            ) : (
+                                                <motion.div
+                                                    key="idle"
+                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    exit={{ opacity: 0, scale: 1.1 }}
+                                                    className="flex items-center gap-2"
+                                                >
+                                                    Create Account
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+
+                                        {/* Success/Progress Background Effect */}
+                                        {loading && (
                                             <motion.div
-                                                key="loading"
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                className="flex items-center gap-3"
-                                            >
-                                                <div className="relative w-5 h-5">
-                                                    <Loader2 className="absolute inset-0 animate-spin text-primary" aria-hidden="true" />
-                                                    <motion.div
-                                                        initial={{ scale: 0 }}
-                                                        animate={{ scale: [0, 1.2, 1] }}
-                                                        className="absolute inset-0 bg-primary/10 rounded-full blur-sm"
-                                                    />
-                                                </div>
-                                                <span className="text-slate-600 font-semibold">{statusMsg || 'Creating account…'}</span>
-                                            </motion.div>
-                                        ) : (
-                                            <motion.div
-                                                key="idle"
-                                                initial={{ opacity: 0, scale: 0.9 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0, scale: 1.1 }}
-                                                className="flex items-center gap-2"
-                                            >
-                                                Create Account
-                                            </motion.div>
+                                                initial={{ x: '-100%' }}
+                                                animate={{ x: '0%' }}
+                                                transition={{ duration: 3, ease: 'linear' }}
+                                                className="absolute bottom-0 left-0 h-1 bg-primary/30 w-full"
+                                            />
                                         )}
-                                    </AnimatePresence>
-
-                                    {/* Success/Progress Background Effect */}
-                                    {loading && (
-                                        <motion.div
-                                            initial={{ x: '-100%' }}
-                                            animate={{ x: '0%' }}
-                                            transition={{ duration: 3, ease: 'linear' }}
-                                            className="absolute bottom-0 left-0 h-1 bg-primary/30 w-full"
-                                        />
-                                    )}
-                                </motion.button>
-                            )}
+                                    </motion.button>
+                                )}
+                            </div>
                         </div>
+                    </form>
 
-                        <p className="text-center text-sm text-gray-500">
-                            Already have an account?{' '}
-                            <Link to="/login" className="font-semibold text-slate-900 hover:text-primary transition-colors underline-offset-4 hover:underline">
-                                Sign in
-                            </Link>
-                        </p>
-                    </div>
+                    <p className="text-center text-sm text-gray-500">
+                        Already have an account?{' '}
+                        <Link to="/login" className="font-semibold text-slate-900 hover:text-primary transition-colors underline-offset-4 hover:underline">
+                            Sign in
+                        </Link>
+                    </p>
                 </div>
             </div>
         </div>

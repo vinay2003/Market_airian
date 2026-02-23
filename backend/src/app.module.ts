@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
@@ -11,7 +12,10 @@ import { EventsModule } from './modules/events/events.module'; // Added this imp
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // ConfigHostModule, // This was in the provided Code Edit, but not imported. Assuming it's a typo or needs an import that wasn't provided. Omitting to keep syntactically correct.
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 100,
+    }]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({ // Added async

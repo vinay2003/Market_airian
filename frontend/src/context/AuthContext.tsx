@@ -1,20 +1,22 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, type ReactNode } from 'react';
+import { useAuthStore } from '@/store/authStore';
 
-interface Vendor {
+interface User {
     id: string;
     businessName: string;
     email: string;
     phone: string;
-    category?: string;
+    role: 'vendor' | 'user';
+    firstName?: string;
+    lastName?: string;
     city?: string;
     avatar?: string;
     logo?: string;
     description?: string;
-    firstName?: string;
-    lastName?: string;
-    role?: 'vendor' | 'user';
     notificationPreferences?: any;
 }
+
+type Vendor = User;
 
 interface AuthContextType {
     vendor: Vendor | null;
@@ -30,50 +32,34 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [vendor, setVendor] = useState<Vendor | null>(() => {
-        const savedVendor = localStorage.getItem('vendor');
-        return savedVendor ? JSON.parse(savedVendor) : null;
-    });
-    const [accessToken, setAccessToken] = useState<string | null>(localStorage.getItem('token'));
+    const { user, accessToken, isAuthenticated, login, logout, updateUser } = useAuthStore();
 
     useEffect(() => {
+        // Keep localStorage in sync for axios interceptor in api.ts
         if (accessToken) {
-            // Future: verify token with /auth/me or similar endpoint
+            localStorage.setItem('token', accessToken);
+        } else {
+            localStorage.removeItem('token');
         }
-    }, [accessToken]);
 
-    const login = (newToken: string, newVendor: Vendor) => {
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('vendor', JSON.stringify(newVendor));
-        setAccessToken(newToken);
-        setVendor(newVendor);
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('vendor');
-        setAccessToken(null);
-        setVendor(null);
-    };
-
-    const updateVendor = (data: Partial<Vendor>) => {
-        if (!vendor) return;
-        const updatedVendor = { ...vendor, ...data };
-        setVendor(updatedVendor);
-        localStorage.setItem('vendor', JSON.stringify(updatedVendor));
-    };
+        if (user) {
+            localStorage.setItem('vendor', JSON.stringify(user));
+        } else {
+            localStorage.removeItem('vendor');
+        }
+    }, [accessToken, user]);
 
     return (
         <AuthContext.Provider
             value={{
-                vendor,
-                user: vendor,
+                vendor: user,
+                user,
                 accessToken,
-                isAuthenticated: !!accessToken,
+                isAuthenticated,
                 login,
                 logout,
-                updateVendor,
-                updateUser: updateVendor
+                updateVendor: updateUser,
+                updateUser
             }}
         >
             {children}
