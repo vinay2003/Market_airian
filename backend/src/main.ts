@@ -2,8 +2,17 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
+  const essentialEnv = ['DATABASE_URL', 'JWT_SECRET'];
+  essentialEnv.forEach(env => {
+    if (!process.env[env]) {
+      console.error(`❌ CRITICAL ERROR: ${env} is not defined in environment variables.`);
+      process.exit(1);
+    }
+  });
+
   const app = await NestFactory.create(AppModule);
 
   // setGlobalPrefix MUST be called very early. 
@@ -23,14 +32,25 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.useGlobalFilters(new AllExceptionsFilter());
+
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,
-    errorHttpStatusCode: 422 // More descriptive for validation errors
+    errorHttpStatusCode: 422
   }));
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port, '0.0.0.0');
-  console.log(`Backend is running on: ${await app.getUrl()}`);
+
+  const url = await app.getUrl();
+  console.log(`🚀 Senior Engine started on: ${url}`);
+  console.log(`📌 Global Prefix: /api`);
+  console.log(`🌐 Allowed Origins: airionsolutions.com, localhost`);
 }
-bootstrap();
+
+// Added better error handling at the bootstrap level
+bootstrap().catch(err => {
+  console.error('Fatal failure during bootstrap:', err);
+  process.exit(1);
+});

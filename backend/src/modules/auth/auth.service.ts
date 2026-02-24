@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { User, UserRole } from '../users/user.entity';
 import { Otp } from './otp.entity';
@@ -20,6 +20,7 @@ export class AuthService {
         private vendorProfileRepository: Repository<VendorProfile>,
         private jwtService: JwtService,
         private smsService: SmsService,
+        private dataSource: DataSource,
     ) { }
 
     async sendOtp(phone: string): Promise<void> {
@@ -72,6 +73,10 @@ export class AuthService {
     }
 
     async registerVendor(data: RegisterVendorDto): Promise<{ accessToken: string; vendor: User }> {
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
         try {
             const {
                 email, password, phone, firstName, lastName,
@@ -81,19 +86,21 @@ export class AuthService {
                 eventVolume, avgBookingPrice
             } = data;
 
-            // Check for existing user by email or phone
-            const existingEmail = await this.userRepository.findOne({ where: { email } });
-            if (existingEmail) throw new ConflictException('Email is already registered');
+            // 1. Identity Verification
+            const existing = await queryRunner.manager.findOne(User, {
+                where: [{ email }, { phone }]
+            });
+            if (existing) {
+                const field = existing.email === email ? 'Email' : 'Phone';
+                throw new ConflictException(`${field} is already registered`);
+            }
 
-            const existingPhone = await this.userRepository.findOne({ where: { phone } });
-            if (existingPhone) throw new ConflictException('Phone number is already registered');
-
-            // Hash password
+            // 2. Security: Hash password
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
 
-            // Create new vendor user
-            const newUser = this.userRepository.create({
+            // 3. Entity Creation (Atomic)
+            const newUser = queryRunner.manager.create(User, {
                 email,
                 phone,
                 firstName,
@@ -104,10 +111,9 @@ export class AuthService {
                 city: city || undefined,
             });
 
-            const savedUser = await this.userRepository.save(newUser);
+            const savedUser = await queryRunner.manager.save(newUser);
 
-            // Create vendor profile in same request
-            const profile = this.vendorProfileRepository.create({
+            const profile = queryRunner.manager.create(VendorProfile, {
                 user: savedUser,
                 businessName: businessName || 'My Business',
                 businessType: (businessType as BusinessType) || BusinessType.INDIVIDUAL,
@@ -126,18 +132,31 @@ export class AuthService {
                 eventVolume: eventVolume || '',
                 avgBookingPrice: avgBookingPrice || '',
             });
-            await this.vendorProfileRepository.save(profile);
+            await queryRunner.manager.save(profile);
+
+            // 4. Commit transaction
+            await queryRunner.commitTransaction();
 
             return {
                 accessToken: this.generateToken(savedUser),
                 vendor: savedUser
             };
         } catch (error) {
-            console.error('Registration Error:', error);
+            // Rollback on any failure to prevent "ghost" users
+            await queryRunner.rollbackTransaction();
+
+            console.error('Senior Engine Alert: Vendor Registration Failed', {
+                error: error.message,
+                stack: error.stack,
+                data: { ...data, password: '[REDACTED]' }
+            });
+
             if (error instanceof ConflictException || error instanceof BadRequestException) {
                 throw error;
             }
-            throw new BadRequestException(`Registration failed: ${error.message || 'Unknown database error'}`);
+            throw new BadRequestException(`Registration failed: ${error.message || 'Database transaction error'}`);
+        } finally {
+            await queryRunner.release();
         }
     }
 
