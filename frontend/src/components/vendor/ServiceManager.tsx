@@ -21,7 +21,7 @@ export default function ServiceManager() {
 
     const fetchProfile = async () => {
         try {
-            const res = await api.get('/vendors/profile');
+            const res = await api.get('vendors/profile');
             // Mapping to serviceCategories
             setCategories(res.data.serviceCategories || []);
         } catch (error) {
@@ -49,7 +49,7 @@ export default function ServiceManager() {
         setSaving(true);
         try {
             // Updating profile with new categories
-            await api.patch('/vendors/profile', { serviceCategories: categories });
+            await api.patch('vendors/profile', { serviceCategories: categories });
             toast({ title: "Saved", description: "Service categories updated." });
         } catch {
             toast({ title: "Error", description: "Failed to save categories.", variant: "destructive" });
