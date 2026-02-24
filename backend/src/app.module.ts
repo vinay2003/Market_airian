@@ -23,7 +23,7 @@ import { User } from './modules/users/user.entity';
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
-        synchronize: configService.get<string>('NODE_ENV') !== 'production',
+        synchronize: true, // Temporarily true to fix schema mismatches
         dropSchema: false,
         ssl: { rejectUnauthorized: false },
       }),

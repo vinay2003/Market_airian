@@ -17,7 +17,7 @@ export class AppController {
       const userCount = await this.appService.getDbStatus();
       return {
         status: 'alive',
-        version: '1.0.4',
+        version: '1.0.5',
         db: 'connected',
         users: userCount,
         timestamp: new Date().toISOString()
@@ -25,7 +25,7 @@ export class AppController {
     } catch (e) {
       return {
         status: 'alive',
-        version: '1.0.4',
+        version: '1.0.5',
         db: 'disconnected',
         error: e.message,
         timestamp: new Date().toISOString()
@@ -35,6 +35,6 @@ export class AppController {
 
   @Get('health')
   health() {
-    return { status: 'ok', message: 'Root health check (not prefixed)', version: '1.0.3' };
+    return { status: 'ok', message: 'Root health check (not prefixed)', version: '1.0.5' };
   }
 }
