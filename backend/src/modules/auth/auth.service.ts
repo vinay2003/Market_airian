@@ -133,7 +133,7 @@ export class AuthService {
         };
     }
 
-    async loginWithPassword(email: string, pass: string): Promise<{ accessToken: string; user: Omit<User, 'password'> }> {
+    async loginWithPassword(email: string, pass: string): Promise<{ accessToken: string; vendor: Omit<User, 'password'> }> {
         // Need to explicitly select password since it has select: false in entity
         const user = await this.userRepository.createQueryBuilder('user')
             .where('user.email = :email', { email })
@@ -150,7 +150,7 @@ export class AuthService {
         }
 
         const { password, ...result } = user;
-        return { accessToken: this.generateToken(user), user: result as User };
+        return { accessToken: this.generateToken(user), vendor: result as User };
     }
 
     async forgotPassword(email: string): Promise<void> {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { api } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Loader2, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { ArtisticBackground } from './ArtisticBackground';
@@ -48,9 +49,7 @@ export default function ResetPassword() {
         setIsLoading(true);
 
         try {
-            // Mocking the successful response for UI flow demonstration
-            // await api.post('/auth/reset-password', { email, otp, newPassword: password });
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await api.post('auth/reset-password', { email, code: otp, newPassword: password });
 
             setIsSuccess(true);
             setTimeout(() => {

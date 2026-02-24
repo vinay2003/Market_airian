@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { api } from '@/lib/api';
 import { motion } from 'framer-motion';
 import { Loader2, ArrowUpRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { ArtisticBackground } from './ArtisticBackground';
@@ -23,10 +24,7 @@ export default function ForgotPassword() {
         setIsLoading(true);
 
         try {
-            // Mocking the successful response for UI flow demonstration
-            // await api.post('/auth/forgot-password', { email });
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
+            await api.post('auth/forgot-password', { email });
             setIsSuccess(true);
         } catch (error: any) {
             console.error('Forgot password failed', error);
