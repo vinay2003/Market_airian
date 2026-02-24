@@ -90,8 +90,13 @@ export default function VendorOnboarding() {
             const res = await api.get('auth/health');
             console.log('Backend health check:', res.data);
             return true;
-        } catch (e) {
-            console.error('Backend unreachable:', e);
+        } catch (e: any) {
+            console.error('Backend connection failed:', {
+                message: e.message,
+                url: e.config?.url,
+                baseURL: e.config?.baseURL,
+                code: e.code
+            });
             return false;
         }
     };
@@ -106,7 +111,7 @@ export default function VendorOnboarding() {
         // Connectivity pre-check
         const isUp = await checkBackend();
         if (!isUp) {
-            setError('Server is unreachable. Please ensure the backend is running and VITE_API_URL is correct.');
+            setError('Server is unreachable. Please ensure your VITE_API_URL is set to the BACKEND service URL (e.g., https://your-app-api.onrender.com) and NOT the frontend URL.');
             setLoading(false);
             return;
         }

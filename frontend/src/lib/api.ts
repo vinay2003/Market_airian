@@ -3,17 +3,14 @@ import axios from 'axios';
 const getBaseURL = () => {
     // If we're on Render or another platform, VITE_API_URL should be the full backend URL.
     // If not provided, we fall back to localhost for development.
-    let rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    let rawUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000';
 
     // Remove any trailing slashes for consistency
     rawUrl = rawUrl.replace(/\/$/, '');
 
-    // CHECK: If the rawUrl already contains /api, we ensure it ends with /
-    if (rawUrl.endsWith('/api')) {
-        return `${rawUrl}/`;
-    }
-
-    return `${rawUrl}/api/`;
+    const url = rawUrl.endsWith('/api') ? `${rawUrl}/` : `${rawUrl}/api/`;
+    console.log('[API] Base URL initialized as:', url);
+    return url;
 };
 
 export const api = axios.create({
