@@ -13,7 +13,12 @@ async function bootstrap() {
   // High-priority middleware
   app.use(helmet());
   app.enableCors({
-    origin: true,
+    origin: [
+      'https://www.airionsolutions.com',
+      'https://airionsolutions.com',
+      'http://localhost:5173',
+      'http://127.0.0.1:5173'
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
