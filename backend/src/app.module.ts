@@ -7,7 +7,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { VendorsModule } from './modules/vendors/vendors.module';
-import { EventsModule } from './modules/events/events.module'; // Added this import
+import { EventsModule } from './modules/events/events.module';
+import { User } from './modules/users/user.entity';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { EventsModule } from './modules/events/events.module'; // Added this imp
       }),
       inject: [ConfigService],
     }),
+    TypeOrmModule.forFeature([User]),
     AuthModule,
     UsersModule,
     VendorsModule,

@@ -11,8 +11,26 @@ export class AppController {
   }
 
   @Get('ping')
-  ping() {
-    return { status: 'alive', version: '1.0.3', timestamp: new Date().toISOString(), prefix: '/api' };
+  async ping() {
+    try {
+      // Check database connectivity
+      const userCount = await this.appService.getDbStatus();
+      return {
+        status: 'alive',
+        version: '1.0.4',
+        db: 'connected',
+        users: userCount,
+        timestamp: new Date().toISOString()
+      };
+    } catch (e) {
+      return {
+        status: 'alive',
+        version: '1.0.4',
+        db: 'disconnected',
+        error: e.message,
+        timestamp: new Date().toISOString()
+      };
+    }
   }
 
   @Get('health')

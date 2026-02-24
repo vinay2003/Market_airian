@@ -72,65 +72,73 @@ export class AuthService {
     }
 
     async registerVendor(data: RegisterVendorDto): Promise<{ accessToken: string; vendor: User }> {
-        const {
-            email, password, phone, firstName, lastName,
-            businessName, businessType, description, city, address,
-            pincode, country, state, locality, plotNo, landmark,
-            yearsInBusiness, acquisitionChannels, serviceCategories,
-            eventVolume, avgBookingPrice
-        } = data;
+        try {
+            const {
+                email, password, phone, firstName, lastName,
+                businessName, businessType, description, city, address,
+                pincode, country, state, locality, plotNo, landmark,
+                yearsInBusiness, acquisitionChannels, serviceCategories,
+                eventVolume, avgBookingPrice
+            } = data;
 
-        // Check for existing user by email or phone
-        const existingEmail = await this.userRepository.findOne({ where: { email } });
-        if (existingEmail) throw new ConflictException('Email is already registered');
+            // Check for existing user by email or phone
+            const existingEmail = await this.userRepository.findOne({ where: { email } });
+            if (existingEmail) throw new ConflictException('Email is already registered');
 
-        const existingPhone = await this.userRepository.findOne({ where: { phone } });
-        if (existingPhone) throw new ConflictException('Phone number is already registered');
+            const existingPhone = await this.userRepository.findOne({ where: { phone } });
+            if (existingPhone) throw new ConflictException('Phone number is already registered');
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+            // Hash password
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Create new vendor user
-        const newUser = this.userRepository.create({
-            email,
-            phone,
-            firstName,
-            lastName,
-            password: hashedPassword,
-            role: UserRole.VENDOR,
-            isVerified: true,
-            city: city || undefined,
-        });
+            // Create new vendor user
+            const newUser = this.userRepository.create({
+                email,
+                phone,
+                firstName,
+                lastName,
+                password: hashedPassword,
+                role: UserRole.VENDOR,
+                isVerified: true,
+                city: city || undefined,
+            });
 
-        const savedUser = await this.userRepository.save(newUser);
+            const savedUser = await this.userRepository.save(newUser);
 
-        // Create vendor profile in same request
-        const profile = this.vendorProfileRepository.create({
-            user: savedUser,
-            businessName: businessName || 'My Business',
-            businessType: (businessType as BusinessType) || BusinessType.INDIVIDUAL,
-            description: description || '',
-            city: city || '',
-            address: address || '',
-            pincode: pincode || '',
-            country: country || 'India',
-            state: state || '',
-            locality: locality || '',
-            plotNo: plotNo || '',
-            landmark: landmark || '',
-            yearsInBusiness: yearsInBusiness || 0,
-            acquisitionChannels: acquisitionChannels || [],
-            serviceCategories: serviceCategories || [],
-            eventVolume: eventVolume || '',
-            avgBookingPrice: avgBookingPrice || '',
-        });
-        await this.vendorProfileRepository.save(profile);
+            // Create vendor profile in same request
+            const profile = this.vendorProfileRepository.create({
+                user: savedUser,
+                businessName: businessName || 'My Business',
+                businessType: (businessType as BusinessType) || BusinessType.INDIVIDUAL,
+                description: description || '',
+                city: city || '',
+                address: address || '',
+                pincode: pincode || '',
+                country: country || 'India',
+                state: state || '',
+                locality: locality || '',
+                plotNo: plotNo || '',
+                landmark: landmark || '',
+                yearsInBusiness: yearsInBusiness || 0,
+                acquisitionChannels: acquisitionChannels || [],
+                serviceCategories: serviceCategories || [],
+                eventVolume: eventVolume || '',
+                avgBookingPrice: avgBookingPrice || '',
+            });
+            await this.vendorProfileRepository.save(profile);
 
-        return {
-            accessToken: this.generateToken(savedUser),
-            vendor: savedUser
-        };
+            return {
+                accessToken: this.generateToken(savedUser),
+                vendor: savedUser
+            };
+        } catch (error) {
+            console.error('Registration Error:', error);
+            if (error instanceof ConflictException || error instanceof BadRequestException) {
+                throw error;
+            }
+            throw new BadRequestException(`Registration failed: ${error.message || 'Unknown database error'}`);
+        }
     }
 
     async loginWithPassword(email: string, pass: string): Promise<{ accessToken: string; vendor: Omit<User, 'password'> }> {
