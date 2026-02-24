@@ -85,14 +85,34 @@ export default function VendorOnboarding() {
         setStep(s => Math.min(3, s + 1));
     };
 
+    const checkBackend = async () => {
+        try {
+            const res = await api.get('auth/health');
+            console.log('Backend health check:', res.data);
+            return true;
+        } catch (e) {
+            console.error('Backend unreachable:', e);
+            return false;
+        }
+    };
+
     const handleSubmit = async () => {
         const err = validate(3);
         if (err) { setError(err); return; }
         setLoading(true);
-        setMsg('Creating your account…');
+        setMsg('Connecting to server…');
         setError('');
+
+        // Connectivity pre-check
+        const isUp = await checkBackend();
+        if (!isUp) {
+            setError('Server is unreachable. Please ensure the backend is running and VITE_API_URL is correct.');
+            setLoading(false);
+            return;
+        }
+
+        setMsg('Creating your account…');
         try {
-            // Optimized: Unified registration and profile creation in a single request
             const registrationData = {
                 ...form,
                 yearsInBusiness: form.yearsInBusiness ? parseInt(form.yearsInBusiness) : 0,
@@ -103,7 +123,7 @@ export default function VendorOnboarding() {
                 category: form.serviceCategories[0] || 'Other',
             };
 
-            const authRes = await api.post('/auth/register-vendor', registrationData);
+            const authRes = await api.post('auth/register-vendor', registrationData);
 
             const { accessToken, vendor } = authRes.data;
             if (accessToken) {
@@ -113,8 +133,13 @@ export default function VendorOnboarding() {
             setMsg('Success! Redirecting…');
             setTimeout(() => navigate('/vendor/dashboard'), 800);
         } catch (e: any) {
-            console.error('Registration error:', e);
-            setError(e.response?.data?.message || 'Registration failed. Please check your inputs.');
+            console.error('Registration error detail:', {
+                status: e.response?.status,
+                data: e.response?.data,
+                url: e.config?.url,
+                baseURL: e.config?.baseURL
+            });
+            setError(e.response?.data?.message || 'Registration failed. Technical details logged to console.');
         } finally {
             setLoading(false);
             setMsg('');

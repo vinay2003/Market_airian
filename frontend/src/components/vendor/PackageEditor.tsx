@@ -98,12 +98,12 @@ export default function PackageEditor({ isOpen, onClose, onSuccess, pkg }: Packa
             }
 
             if (pkg?.id) {
-                await api.patch(`/vendors/packages/${pkg.id}`, data, {
+                await api.patch(`vendors/packages/${pkg.id}`, data, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 toast({ title: "Updated", description: "Package updated successfully." });
             } else {
-                await api.post('/vendors/packages', data, {
+                await api.post('vendors/packages', data, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 toast({ title: "Created", description: "Package created successfully." });

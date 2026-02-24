@@ -17,7 +17,7 @@ export default function GalleryManager() {
 
     const fetchGallery = async () => {
         try {
-            const res = await api.get('/vendors/profile');
+            const res = await api.get('vendors/profile');
             setGallery(res.data.gallery || []);
         } catch (error) {
             console.error("Failed to load gallery", error);
@@ -41,7 +41,7 @@ export default function GalleryManager() {
 
         setUploading(true);
         try {
-            await api.post('/vendors/gallery', formData, {
+            await api.post('vendors/gallery', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             toast({ title: "Uploaded", description: "Media added to gallery." });
@@ -57,7 +57,7 @@ export default function GalleryManager() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this item?')) return;
         try {
-            await api.delete(`/vendors/gallery/${id}`);
+            await api.delete(`vendors/gallery/${id}`);
             setGallery(gallery.filter(item => item.id !== id));
             toast({ title: "Deleted", description: "Item removed from gallery." });
         } catch {

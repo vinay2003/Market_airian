@@ -32,7 +32,7 @@ export default function VendorLayout({ children }: VendorLayoutProps) {
 
     useEffect(() => {
         if (user?.role === 'vendor') {
-            api.get('/vendors/profile')
+            api.get('vendors/profile')
                 .then(res => setVendorLogo(res.data.logoUrl))
                 .catch(err => console.error("Failed to load vendor logo", err));
         }

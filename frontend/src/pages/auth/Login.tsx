@@ -29,7 +29,7 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            const response = await api.post('/auth/login', { email, password });
+            const response = await api.post('auth/login', { email, password });
             // Assume response data contains: { accessToken, vendor }
             const { accessToken, vendor } = response.data;
             login(accessToken, vendor);

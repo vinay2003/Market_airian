@@ -17,7 +17,7 @@ export default function VendorPublicProfile() {
     useEffect(() => {
         const fetchVendor = async () => {
             try {
-                const res = await api.get(`/vendors/public/${id}`);
+                const res = await api.get(`vendors/public/${id}`);
                 setVendor(res.data);
             } catch (err) {
                 console.error("Failed to fetch vendor", err);

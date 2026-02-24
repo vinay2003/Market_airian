@@ -51,7 +51,7 @@ export default function VendorProfileEditor() {
 
     const fetchProfile = async () => {
         try {
-            const res = await api.get('/vendors/profile');
+            const res = await api.get('vendors/profile');
             const data = res.data;
             setFormData({
                 businessName: data.businessName || '',
@@ -93,7 +93,7 @@ export default function VendorProfileEditor() {
 
         setSaving(true);
         try {
-            await api.post('/vendors/profile', {
+            await api.post('vendors/profile', {
                 ...formData,
                 yearsInBusiness: parseInt(formData.yearsInBusiness) || 0
             });
@@ -136,7 +136,7 @@ export default function VendorProfileEditor() {
 
         try {
             setLoading(true); // Show global loading or local loading state
-            const endpoint = type === 'logo' ? '/vendors/upload-logo' : '/vendors/upload-banner';
+            const endpoint = type === 'logo' ? 'vendors/upload-logo' : 'vendors/upload-banner';
             const res = await api.post(endpoint, uploadData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });

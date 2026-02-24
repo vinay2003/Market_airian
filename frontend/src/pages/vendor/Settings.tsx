@@ -52,7 +52,7 @@ export default function Settings() {
     const handleAccountUpdate = async () => {
         setLoading(true);
         try {
-            const { data } = await api.patch('/users/me', {
+            const { data } = await api.patch('users/me', {
                 firstName: accountForm.firstName,
                 lastName: accountForm.lastName,
                 // Email/Phone updates might need verification, restricted for now or allow if backend permits
@@ -73,7 +73,7 @@ export default function Settings() {
         }
         setLoading(true);
         try {
-            await api.patch('/users/me', { password: passwordForm.newPassword });
+            await api.patch('users/me', { password: passwordForm.newPassword });
             toast({ title: "Password Updated", description: "Your password has been changed." });
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch {
@@ -86,7 +86,7 @@ export default function Settings() {
     const handleNotificationUpdate = async () => {
         setLoading(true);
         try {
-            const { data } = await api.patch('/users/me', { notificationPreferences: notificationForm });
+            const { data } = await api.patch('users/me', { notificationPreferences: notificationForm });
             updateUser(data);
             toast({ title: "Preferences Saved", description: "Notification settings updated." });
         } catch {
