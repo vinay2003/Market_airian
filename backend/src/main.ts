@@ -6,6 +6,10 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // setGlobalPrefix MUST be called very early. 
+  // We exclude 'health' so we can verify the app is alive even if the prefix logic fails.
+  app.setGlobalPrefix('api', { exclude: ['health'] });
+
   // High-priority middleware
   app.use(helmet());
   app.enableCors({
@@ -13,9 +17,6 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
-
-  // Prefixing MUST come before pipes and other global logic
-  app.setGlobalPrefix('api');
 
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
