@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, ArrowUpRight, ArrowLeft, ArrowRight, Eye, EyeOff, Check } from 'lucide-react';
+import { ArrowUpRight, ArrowLeft, ArrowRight, Eye, EyeOff, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -105,19 +105,19 @@ export default function VendorOnboarding() {
         const err = validate(3);
         if (err) { setError(err); return; }
         setLoading(true);
-        setMsg('Connecting to server…');
+        setMsg('Initializing secure connection…');
         setError('');
 
-        // Connectivity pre-check
-        const isUp = await checkBackend();
-        if (!isUp) {
-            setError('Server is unreachable. Please ensure your VITE_API_URL is set to the BACKEND service URL (e.g., https://your-app-api.onrender.com) and NOT the frontend URL.');
-            setLoading(false);
-            return;
-        }
-
-        setMsg('Creating your account…');
         try {
+            // Connectivity pre-check
+            const isUp = await checkBackend();
+            if (!isUp) {
+                setError('Server is currently unreachable. Please check your internet connection or try again in a few moments.');
+                setLoading(false);
+                return;
+            }
+
+            setMsg('Verifying business credentials…');
             const registrationData = {
                 ...form,
                 yearsInBusiness: form.yearsInBusiness ? parseInt(form.yearsInBusiness) : 0,
@@ -128,15 +128,17 @@ export default function VendorOnboarding() {
                 category: form.serviceCategories[0] || 'Other',
             };
 
+            setMsg('Securing account data…');
             const authRes = await api.post('auth/register-vendor', registrationData);
 
+            setMsg('Optimizing vendor profile…');
             const { accessToken, vendor } = authRes.data;
             if (accessToken) {
                 login(accessToken, vendor);
             }
 
-            setMsg('Success! Redirecting…');
-            setTimeout(() => navigate('/vendor/dashboard'), 800);
+            setMsg('Account finalized! Preparing dashboard…');
+            setTimeout(() => navigate('/vendor/dashboard'), 1500);
         } catch (e: any) {
             console.error('Registration error detail:', {
                 status: e.response?.status,
@@ -144,8 +146,7 @@ export default function VendorOnboarding() {
                 url: e.config?.url,
                 baseURL: e.config?.baseURL
             });
-            setError(e.response?.data?.message || 'Registration failed. Technical details logged to console.');
-        } finally {
+            setError(e.response?.data?.message || 'Registration encountered an unexpected issue. Please contact support.');
             setLoading(false);
             setMsg('');
         }
@@ -516,20 +517,31 @@ export default function VendorOnboarding() {
                                             {loading ? (
                                                 <motion.div
                                                     key="loading"
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -10 }}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
                                                     className="flex items-center gap-3"
                                                 >
-                                                    <div className="relative w-5 h-5">
-                                                        <Loader2 className="absolute inset-0 animate-spin text-primary" aria-hidden="true" />
-                                                        <motion.div
-                                                            initial={{ scale: 0 }}
-                                                            animate={{ scale: [0, 1.2, 1] }}
-                                                            className="absolute inset-0 bg-primary/10 rounded-full blur-sm"
-                                                        />
+                                                    <div className="flex gap-1.5 items-center">
+                                                        {[0, 1, 2].map((i) => (
+                                                            <motion.div
+                                                                key={i}
+                                                                animate={{
+                                                                    scale: [1, 1.5, 1],
+                                                                    opacity: [0.3, 1, 0.3],
+                                                                }}
+                                                                transition={{
+                                                                    duration: 1,
+                                                                    repeat: Infinity,
+                                                                    delay: i * 0.2,
+                                                                }}
+                                                                className="w-2 h-2 bg-slate-400 rounded-full"
+                                                            />
+                                                        ))}
                                                     </div>
-                                                    <span className="text-slate-600 font-semibold">{statusMsg || 'Creating account…'}</span>
+                                                    <span className="text-slate-500 font-medium lowercase tracking-tight">
+                                                        {statusMsg || 'processing'}
+                                                    </span>
                                                 </motion.div>
                                             ) : (
                                                 <motion.div
@@ -544,18 +556,93 @@ export default function VendorOnboarding() {
                                             )}
                                         </AnimatePresence>
 
-                                        {/* Success/Progress Background Effect */}
+                                        {/* Premium Progress Bar */}
                                         {loading && (
                                             <motion.div
-                                                initial={{ x: '-100%' }}
-                                                animate={{ x: '0%' }}
-                                                transition={{ duration: 3, ease: 'linear' }}
-                                                className="absolute bottom-0 left-0 h-1 bg-primary/30 w-full"
+                                                initial={{ scaleX: 0 }}
+                                                animate={{ scaleX: 1 }}
+                                                transition={{ duration: 4, ease: "circIn" }}
+                                                className="absolute bottom-0 left-0 h-[3px] bg-primary w-full origin-left"
                                             />
                                         )}
                                     </motion.button>
                                 )}
                             </div>
+
+                            {/* Full Screen Loading Overlay for Premium Experience */}
+                            <AnimatePresence>
+                                {loading && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="fixed inset-0 z-[100] flex items-center justify-center bg-white/60 backdrop-blur-xl"
+                                    >
+                                        <div className="max-w-xs w-full text-center space-y-8 px-6">
+                                            <div className="relative mx-auto w-24 h-24">
+                                                {/* Outer Rings */}
+                                                <motion.div
+                                                    animate={{ rotate: 360 }}
+                                                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                                                    className="absolute inset-0 border-2 border-dashed border-primary/20 rounded-full"
+                                                />
+                                                <motion.div
+                                                    animate={{ rotate: -360 }}
+                                                    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                                                    className="absolute inset-2 border border-slate-200 rounded-full"
+                                                />
+
+                                                {/* Center Icon */}
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <motion.div
+                                                        animate={{
+                                                            scale: [1, 1.1, 1],
+                                                            boxShadow: [
+                                                                "0 0 0 0px rgba(79, 70, 229, 0)",
+                                                                "0 0 0 15px rgba(79, 70, 229, 0.1)",
+                                                                "0 0 0 0px rgba(79, 70, 229, 0)"
+                                                            ]
+                                                        }}
+                                                        transition={{ duration: 2, repeat: Infinity }}
+                                                        className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white"
+                                                    >
+                                                        <Building2 className="w-6 h-6" />
+                                                    </motion.div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <h3 className="text-xl font-heading font-bold text-slate-900 leading-tight">
+                                                    Setting up your <br /> business portal
+                                                </h3>
+                                                <div className="flex flex-col gap-1 items-center">
+                                                    <AnimatePresence mode="wait">
+                                                        <motion.p
+                                                            key={statusMsg}
+                                                            initial={{ opacity: 0, y: 5 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            exit={{ opacity: 0, y: -5 }}
+                                                            className="text-primary font-medium text-sm"
+                                                        >
+                                                            {statusMsg || 'Connecting...'}
+                                                        </motion.p>
+                                                    </AnimatePresence>
+                                                    <div className="flex gap-1">
+                                                        {[0, 1, 2].map((i) => (
+                                                            <motion.div
+                                                                key={i}
+                                                                animate={{ opacity: [0.2, 1, 0.2] }}
+                                                                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                                                                className="w-1 h-1 bg-slate-300 rounded-full"
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </form>
 

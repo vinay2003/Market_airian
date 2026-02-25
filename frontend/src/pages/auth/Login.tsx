@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Loader2, ArrowUpRight } from 'lucide-react';
+import { Eye, EyeOff, ArrowUpRight } from 'lucide-react';
 import { ArtisticBackground } from './ArtisticBackground';
 import { BRAND } from '@/lib/constants';
 
@@ -176,13 +176,39 @@ export default function Login() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full h-14 text-lg bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800 transition-all flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 active:scale-[0.98]"
+                                className="w-full h-14 text-lg bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800 transition-all flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_4px_14px_0_rgba(0,0,0,0.2)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 active:scale-[0.98] overflow-hidden relative"
                             >
-                                {isLoading ? (
-                                    <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Logging in...</>
-                                ) : (
-                                    'Sign In'
-                                )}
+                                <motion.div
+                                    animate={isLoading ? "loading" : "idle"}
+                                    variants={{
+                                        idle: { opacity: 1 },
+                                        loading: { opacity: 1 }
+                                    }}
+                                    className="flex items-center justify-center"
+                                >
+                                    {isLoading ? (
+                                        <div className="flex gap-1.5 items-center">
+                                            {[0, 1, 2].map((i) => (
+                                                <motion.div
+                                                    key={i}
+                                                    animate={{
+                                                        scale: [1, 1.5, 1],
+                                                        opacity: [0.3, 1, 0.3],
+                                                    }}
+                                                    transition={{
+                                                        duration: 1,
+                                                        repeat: Infinity,
+                                                        delay: i * 0.2,
+                                                    }}
+                                                    className="w-1.5 h-1.5 bg-white rounded-full"
+                                                />
+                                            ))}
+                                            <span className="ml-2 text-white/90">Authenticating</span>
+                                        </div>
+                                    ) : (
+                                        'Sign In'
+                                    )}
+                                </motion.div>
                             </button>
 
                             <p className="text-center text-sm text-gray-500 mt-4">
