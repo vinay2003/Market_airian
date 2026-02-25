@@ -29,7 +29,6 @@
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
     "@supabase/supabase-js": "^2.94.1",
-    "@types/bcrypt": "^6.0.0",
     "@types/multer": "^2.0.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
