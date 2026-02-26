@@ -79,6 +79,25 @@ export class VendorsController {
         return profile;
     }
 
+    @Get('public')
+    @Public()
+    async getAllPublicVendors() {
+        // Find all verified vendors, optionally with some required profile completeness
+        const vendors = await this.vendorsService.getPublicVendors();
+        // Prevent listing vendors missing critical info
+        return vendors.filter(v => v.businessName && v.city);
+    }
+
+    @Get('packages')
+    @Roles(UserRole.VENDOR)
+    async getPackages(@Request() req: any) {
+        const profile = await this.vendorsService.getProfile(req.user);
+        if (!profile) {
+            throw new NotFoundException('Vendor profile not found');
+        }
+        return profile.packages || [];
+    }
+
     @Post('packages')
     @Roles(UserRole.VENDOR)
     @UseInterceptors(FilesInterceptor('images', 5)) // Max 5 images

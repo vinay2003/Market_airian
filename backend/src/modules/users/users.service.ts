@@ -18,4 +18,12 @@ export class UsersService {
         await this.userRepository.update(id, data);
         return this.findOne(id) as Promise<User>;
     }
+
+    async remove(id: string): Promise<void> {
+        await this.userRepository.delete(id);
+    }
+
+    async softDelete(id: string): Promise<void> {
+        await this.userRepository.update(id, { isVerified: false });
+    }
 }

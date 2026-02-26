@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -7,76 +7,65 @@ import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Search, MapPin, Filter, Star, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-
-// Mock Data
-const VENDORS = [
-    {
-        id: '1',
-        name: 'Luxe Moments Photography',
-        category: 'Photography',
-        rating: 4.9,
-        reviews: 124,
-        image: '/images/WhatsApp Image 2026-02-10 at 22.00.11.jpeg',
-        location: 'Mumbai, India',
-        price: 45000,
-        tags: ['Wedding', 'Candid', 'Drone']
-    },
-    {
-        id: '2',
-        name: 'Royal Palace Gardens',
-        category: 'Venue',
-        rating: 4.8,
-        reviews: 89,
-        image: '/images/WhatsApp Image 2026-02-10 at 22.00.14.jpeg',
-        location: 'Udaipur, India',
-        price: 200000,
-        tags: ['Outdoor', 'Banquet', 'Heritage']
-    },
-    {
-        id: '3',
-        name: 'Gourmet Delights Catering',
-        category: 'Catering',
-        rating: 5.0,
-        reviews: 56,
-        image: '/images/WhatsApp Image 2026-02-10 at 22.00.16.jpeg',
-        location: 'Delhi, India',
-        price: 1200,
-        priceUnit: '/plate',
-        tags: ['Vegetarian', 'Continental', 'Indian']
-    },
-    {
-        id: '4',
-        name: 'Beats & Bass DJ',
-        category: 'Entertainment',
-        rating: 4.7,
-        reviews: 42,
-        image: '/images/WhatsApp Image 2026-02-10 at 22.00.18.jpeg',
-        location: 'Bangalore, India',
-        price: 25000,
-        tags: ['Bollywood', 'EDM', 'Live']
-    },
-    {
-        id: '5',
-        name: 'Elegant Decors',
-        category: 'Decoration',
-        rating: 4.6,
-        reviews: 31,
-        image: '/images/WhatsApp Image 2026-02-10 at 22.00.19.jpeg',
-        location: 'Pune, India',
-        price: 35000,
-        tags: ['Floral', 'Modern', 'Theme']
-    }
-];
+import { api } from '@/lib/api';
 
 const CATEGORIES = ['Photography', 'Venue', 'Catering', 'Entertainment', 'Decoration', 'Makeup'];
 
+interface VendorType {
+    id: string;
+    name: string;
+    category: string;
+    rating: number;
+    reviews: number;
+    image: string;
+    location: string;
+    price: number;
+    priceUnit?: string;
+    tags: string[];
+}
+
 export default function BrowseVendors() {
+    const [vendors, setVendors] = useState<VendorType[]>([]);
+    const [loading, setLoading] = useState(true);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [priceRange, setPriceRange] = useState([0, 500000]);
 
-    const filteredVendors = VENDORS.filter(vendor => {
+    useEffect(() => {
+        const fetchVendors = async () => {
+            try {
+                const { data } = await api.get('vendors/public');
+                const formatted = data.map((v: any) => {
+                    const lowestPrice = v.packages?.length > 0
+                        ? Math.min(...v.packages.map((p: any) => Number(p.price)))
+                        : (v.avgBookingPrice ? Number(v.avgBookingPrice) : 5000);
+
+                    return {
+                        id: v.id,
+                        name: v.businessName || 'Unknown Vendor',
+                        category: (v.serviceCategories && v.serviceCategories.length > 0) ? v.serviceCategories[0] : 'Other',
+                        rating: 4.8, // Default rating without review system
+                        reviews: 10,
+                        image: v.logoUrl || '/images/placeholder.jpg',
+                        location: v.city ? `${v.city}, ${v.state || 'India'}` : 'Location NA',
+                        price: lowestPrice,
+                        priceUnit: '',
+                        tags: v.serviceCategories || []
+                    };
+                });
+                setVendors(formatted);
+            } catch (err) {
+                console.error("Failed to fetch vendors", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchVendors();
+    }, []);
+
+    const filteredVendors = vendors.filter(vendor => {
         const matchesSearch = vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             vendor.location.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = selectedCategory ? vendor.category === selectedCategory : true;
@@ -175,70 +164,77 @@ export default function BrowseVendors() {
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredVendors.map(vendor => (
-                                <Link key={vendor.id} to={`/vendor/${vendor.id}`}>
-                                    <Card className="h-full overflow-hidden hover:shadow-lg transition-shadow group">
-                                        <div className="relative h-48 overflow-hidden">
-                                            <img
-                                                src={vendor.image}
-                                                alt={vendor.name}
-                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                            />
-                                            <div className="absolute top-3 right-3">
-                                                <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white">
-                                                    <Heart className="h-4 w-4" />
-                                                </Button>
+                        {loading ? (
+                            <div className="flex justify-center items-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+                        ) : (
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {filteredVendors.map(vendor => (
+                                    <Link key={vendor.id} to={`/vendor/${vendor.id}`}>
+                                        <Card className="h-full overflow-hidden hover:shadow-lg transition-shadow group">
+                                            <div className="relative h-48 overflow-hidden bg-muted flex items-center justify-center">
+                                                <img
+                                                    src={vendor.image}
+                                                    alt={vendor.name}
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=No+Logo';
+                                                    }}
+                                                />
+                                                <div className="absolute top-3 right-3">
+                                                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm hover:bg-white/40 text-white">
+                                                        <Heart className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                                <div className="absolute bottom-3 left-3">
+                                                    <Badge variant="secondary" className="backdrop-blur-md bg-white/90">
+                                                        {vendor.category}
+                                                    </Badge>
+                                                </div>
                                             </div>
-                                            <div className="absolute bottom-3 left-3">
-                                                <Badge variant="secondary" className="backdrop-blur-md bg-white/90">
-                                                    {vendor.category}
-                                                </Badge>
-                                            </div>
-                                        </div>
-                                        <CardContent className="p-4 space-y-3">
-                                            <div>
-                                                <div className="flex justify-between items-start">
-                                                    <h3 className="font-bold text-lg line-clamp-1 group-hover:text-primary transition-colors">{vendor.name}</h3>
-                                                    <div className="flex items-center gap-1 text-sm font-medium">
-                                                        <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                                        {vendor.rating}
+                                            <CardContent className="p-4 space-y-3">
+                                                <div>
+                                                    <div className="flex justify-between items-start">
+                                                        <h3 className="font-bold text-lg line-clamp-1 group-hover:text-primary transition-colors">{vendor.name}</h3>
+                                                        <div className="flex items-center gap-1 text-sm font-medium">
+                                                            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                                                            {vendor.rating}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                                        <MapPin className="w-3 h-3" /> {vendor.location}
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                                                    <MapPin className="w-3 h-3" /> {vendor.location}
+
+                                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                                    Professional {vendor.category?.toLowerCase() || 'vendor'} services for your special day.
+                                                </p>
+
+                                                <div className="flex flex-wrap gap-1">
+                                                    {vendor.tags.map((tag, i) => (
+                                                        <span key={i} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                                                            {tag}
+                                                        </span>
+                                                    ))}
                                                 </div>
-                                            </div>
 
-                                            <p className="text-sm text-muted-foreground line-clamp-2">
-                                                Professional {vendor.category.toLowerCase()} services for your special day.
-                                            </p>
-
-                                            <div className="flex flex-wrap gap-1">
-                                                {vendor.tags.map(tag => (
-                                                    <span key={tag} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                                                        {tag}
-                                                    </span>
-                                                ))}
-                                            </div>
-
-                                            <div className="pt-3 border-t mt-auto flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-xs text-muted-foreground">Starting from</p>
-                                                    <p className="font-bold text-primary">
-                                                        ₹{vendor.price.toLocaleString()}
-                                                        {vendor.priceUnit && <span className="text-sm font-normal text-muted-foreground">{vendor.priceUnit}</span>}
-                                                    </p>
+                                                <div className="pt-3 border-t mt-auto flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Starting from</p>
+                                                        <p className="font-bold text-primary">
+                                                            ₹{vendor.price.toLocaleString()}
+                                                            {vendor.priceUnit && <span className="text-sm font-normal text-muted-foreground">{vendor.priceUnit}</span>}
+                                                        </p>
+                                                    </div>
+                                                    <Button size="sm" variant="outline">View</Button>
                                                 </div>
-                                                <Button size="sm" variant="outline">View</Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            ))}
-                        </div>
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
 
-                        {filteredVendors.length === 0 && (
+                        {!loading && filteredVendors.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <div className="bg-muted p-4 rounded-full mb-4">
                                     <Search className="h-8 w-8 text-muted-foreground" />

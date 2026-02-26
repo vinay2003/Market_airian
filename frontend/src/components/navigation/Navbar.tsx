@@ -45,7 +45,7 @@ export function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                             <Avatar className="h-8 w-8">
-                                <AvatarImage src={user?.avatar} alt={user?.firstName || "User"} />
+                                <AvatarImage src={user?.logoUrl || user?.logo || user?.avatar} alt={user?.businessName || user?.firstName || "User"} />
                                 <AvatarFallback className="bg-primary/10 text-primary">
                                     {(user?.firstName || user?.role || "U").charAt(0).toUpperCase()}
                                 </AvatarFallback>

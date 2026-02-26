@@ -24,19 +24,29 @@ interface VendorLayoutProps {
 }
 
 export default function VendorLayout({ children }: VendorLayoutProps) {
-    const { user, logout } = useAuth();
+    const { user, logout, updateUser } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [vendorLogo, setVendorLogo] = useState<string | null>(null);
 
     useEffect(() => {
-        if (user?.role === 'vendor') {
+        if (user?.role === 'vendor' && !user?.logoUrl) {
             api.get('vendors/profile')
-                .then(res => setVendorLogo(res.data.logoUrl))
+                .then(res => {
+                    setVendorLogo(res.data.logoUrl);
+                    if (res.data.logoUrl || res.data.businessName) {
+                        updateUser({
+                            logoUrl: res.data.logoUrl,
+                            businessName: res.data.businessName
+                        });
+                    }
+                })
                 .catch(err => console.error("Failed to load vendor logo", err));
+        } else if (user?.logoUrl) {
+            setVendorLogo(user.logoUrl);
         }
-    }, [user]);
+    }, [user, updateUser]);
 
     const navItems = [
         { label: 'Overview', icon: LayoutDashboard, path: '/vendor/dashboard' },
@@ -150,9 +160,9 @@ export default function VendorLayout({ children }: VendorLayoutProps) {
                                 <Button variant="ghost" className="pl-2 pr-1 h-auto py-1.5 rounded-full hover:bg-gray-50">
                                     <div className="flex items-center gap-3 text-left">
                                         <Avatar className="h-8 w-8 border border-gray-200">
-                                            <AvatarImage src={user?.avatar} />
+                                            <AvatarImage src={user?.logoUrl || user?.logo || user?.avatar} />
                                             <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                                                {user?.firstName?.[0] || 'V'}
+                                                {user?.businessName?.[0] || user?.firstName?.[0] || 'V'}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="hidden sm:block">

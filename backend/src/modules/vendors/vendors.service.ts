@@ -27,7 +27,10 @@ export class VendorsService {
     }
 
     async getProfile(user: User): Promise<VendorProfile | null> {
-        return this.vendorRepository.findOne({ where: { user: { id: user.id } } });
+        return this.vendorRepository.findOne({
+            where: { user: { id: user.id } },
+            relations: ['packages', 'gallery']
+        });
     }
 
     async updateProfile(user: User, data: Partial<VendorProfile>): Promise<VendorProfile> {
@@ -38,6 +41,15 @@ export class VendorsService {
     async getProfileById(id: string): Promise<VendorProfile | null> {
         return this.vendorRepository.findOne({
             where: { id },
+            relations: ['user', 'packages', 'gallery']
+        });
+    }
+
+    async getPublicVendors(): Promise<VendorProfile[]> {
+        return this.vendorRepository.find({
+            where: {
+                user: { isVerified: true }
+            },
             relations: ['user', 'packages', 'gallery']
         });
     }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { api } from '@/lib/api';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,7 @@ import { Upload, Save, Store, MapPin, Phone, Globe } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function VendorProfileEditor() {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -22,22 +23,42 @@ export default function VendorProfileEditor() {
         website: '',
         category: '',
     });
+    const [logoUrl, setLogoUrl] = useState<string>('');
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
+    const [loadingData, setLoadingData] = useState(true);
+
     useEffect(() => {
-        // Load initial data
-        // For now, we use the user object, but in real app we'd fetch /vendors/profile
-        if (user) {
-            setFormData({
-                businessName: user.firstName ? `${user.firstName}'s Business` : '', // Fallback
-                description: 'Professional event services.',
-                phone: user.phone || '',
-                address: '',
-                website: '',
-                category: user.role === 'vendor' ? 'Photography' : '', // Mock default
-            });
-        }
-    }, [user]);
+        const fetchProfile = async () => {
+            try {
+                const { data } = await api.get('/vendors/profile');
+                if (data) {
+                    setFormData({
+                        businessName: data.businessName || '',
+                        description: data.description || '',
+                        phone: data.user?.phone || user?.phone || '',
+                        address: data.city || data.address || '',
+                        website: data.socialLinks?.website || '',
+                        category: data.serviceCategories?.[0] || '',
+                    });
+                    if (data.logoUrl) {
+                        setLogoUrl(data.logoUrl);
+                    }
+                    if (data.logoUrl || data.businessName) {
+                        updateUser({
+                            logoUrl: data.logoUrl,
+                            businessName: data.businessName
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching profile", error);
+            } finally {
+                setLoadingData(false);
+            }
+        };
+        fetchProfile();
+    }, [user, updateUser]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -54,19 +75,42 @@ export default function VendorProfileEditor() {
         setLoading(true);
 
         try {
-            // Mock API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // If they selected a new logo, upload it first
+            let finalLogoUrl = logoUrl;
+            if (avatarFile) {
+                const formDataFile = new FormData();
+                formDataFile.append('file', avatarFile);
+                const { data: uploadData } = await api.post('/vendors/upload-logo', formDataFile, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                if (uploadData?.logoUrl) {
+                    finalLogoUrl = uploadData.logoUrl;
+                    setLogoUrl(finalLogoUrl);
+                }
+            }
 
-            // In a real app, we would upload the file and update the profile via API
-            // const form = new FormData();
-            // ... append fields
-            // await api.patch('/vendors/profile', form);
+            // Update text details
+            await api.post('/vendors/profile', {
+                businessName: formData.businessName,
+                description: formData.description,
+                city: formData.address, // mapping address field to city for now
+                address: formData.address,
+                serviceCategories: [formData.category],
+                socialLinks: { website: formData.website }
+            });
+
+            updateUser({
+                businessName: formData.businessName,
+                logoUrl: finalLogoUrl
+            });
 
             toast({
                 title: "Profile Updated",
                 description: "Your business details have been saved successfully.",
             });
-        } catch {
+            // Re-fetch or reset file state
+            setAvatarFile(null);
+        } catch (error) {
             toast({
                 title: "Error",
                 description: "Failed to update profile. Please try again.",
@@ -76,6 +120,10 @@ export default function VendorProfileEditor() {
             setLoading(false);
         }
     };
+
+    if (loadingData) {
+        return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>;
+    }
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -101,11 +149,14 @@ export default function VendorProfileEditor() {
                     </CardHeader>
                     <CardContent className="space-y-6 flex flex-col items-center text-center">
                         <div className="relative group">
-                            <Avatar className="h-32 w-32 border-4 border-muted">
-                                <AvatarImage src={avatarFile ? URL.createObjectURL(avatarFile) : user?.avatar} />
-                                <AvatarFallback className="text-4xl">
-                                    {formData.businessName.charAt(0) || "B"}
-                                </AvatarFallback>
+                            <Avatar className="h-32 w-32 border-4 border-muted flex items-center justify-center overflow-hidden">
+                                {avatarFile || logoUrl ? (
+                                    <AvatarImage className="object-cover w-full h-full" src={avatarFile ? URL.createObjectURL(avatarFile) : logoUrl} />
+                                ) : (
+                                    <AvatarFallback className="text-4xl">
+                                        {formData.businessName.charAt(0) || "B"}
+                                    </AvatarFallback>
+                                )}
                             </Avatar>
                             <label className="absolute inset-0 flex items-center justify-center bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer">
                                 <Upload className="h-6 w-6" />

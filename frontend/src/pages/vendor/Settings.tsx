@@ -4,13 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function Settings() {
-    const { user, logout, updateUser } = useAuth();
+    const { user, updateUser } = useAuth();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
 
@@ -145,7 +144,23 @@ export default function Settings() {
                                     <Input value={accountForm.phone} disabled className="bg-muted" />
                                 </div>
                             </div>
-                            <div className="flex justify-end mt-4">
+                            <div className="flex justify-between items-center mt-4">
+                                <Button variant="ghost" className="text-destructive hover:bg-destructive/10" onClick={async () => {
+                                    if (confirm("Are you sure you want to permanently delete your account? This action cannot be undone.")) {
+                                        setLoading(true);
+                                        try {
+                                            await api.delete('users/me');
+                                            toast({ title: "Account Deleted" });
+                                            window.location.href = '/login';
+                                        } catch {
+                                            toast({ title: "Error", description: "Failed to delete account.", variant: "destructive" });
+                                        } finally {
+                                            setLoading(false);
+                                        }
+                                    }
+                                }}>
+                                    Delete Account
+                                </Button>
                                 <Button onClick={handleAccountUpdate} disabled={loading}>{loading ? 'Saving...' : 'Save Changes'}</Button>
                             </div>
                         </CardContent>
@@ -170,19 +185,6 @@ export default function Settings() {
                             </div>
                             <div className="flex justify-end mt-4">
                                 <Button onClick={handlePasswordUpdate} disabled={loading}>{loading ? 'Updating...' : 'Update Password'}</Button>
-                            </div>
-
-                            <div className="border-t pt-6 mt-6">
-                                <h3 className="text-lg font-medium text-destructive mb-2">Danger Zone</h3>
-                                <div className="flex justify-between items-center p-4 border border-destructive/20 rounded-md bg-destructive/5">
-                                    <div>
-                                        <p className="font-medium text-destructive">Sign out</p>
-                                        <p className="text-sm text-muted-foreground">Log out of your account.</p>
-                                    </div>
-                                    <Button variant="destructive" onClick={logout}>
-                                        <LogOut className="mr-2 h-4 w-4" /> Logout
-                                    </Button>
-                                </div>
                             </div>
                         </CardContent>
                     </Card>

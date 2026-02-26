@@ -3,7 +3,7 @@ import { MetricCard } from '@/components/shared/MetricCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    DollarSign,
+    IndianRupee,
     CalendarCheck,
     Package,
     Eye,
@@ -28,7 +28,7 @@ export default function VendorDashboard() {
                     <Link to="/vendor/bookings" className="flex-1 md:flex-none">
                         <Button variant="outline" className="w-full md:w-auto">View Bookings</Button>
                     </Link>
-                    <Link to="/vendor/packages/new" className="flex-1 md:flex-none">
+                    <Link to="/vendor/packages?create=true" className="flex-1 md:flex-none">
                         <Button className="w-full md:w-auto">
                             <Plus className="mr-2 h-4 w-4" /> Create Package
                         </Button>
@@ -39,8 +39,8 @@ export default function VendorDashboard() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <MetricCard
                     title="Total Revenue"
-                    value="$12,450"
-                    icon={DollarSign}
+                    value="₹12,450"
+                    icon={IndianRupee}
                     trend={{ value: 12, isPositive: true }}
                     description="from last month"
                 />

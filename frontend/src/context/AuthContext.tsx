@@ -12,6 +12,7 @@ interface User {
     city?: string;
     avatar?: string;
     logo?: string;
+    logoUrl?: string;
     description?: string;
     notificationPreferences?: any;
 }
