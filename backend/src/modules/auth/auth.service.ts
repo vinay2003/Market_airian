@@ -87,8 +87,9 @@ export class AuthService {
             } = data;
 
             // 1. Identity Verification
+            const normalizedEmail = email.toLowerCase();
             const existing = await queryRunner.manager.findOne(User, {
-                where: [{ email }, { phone }]
+                where: [{ email: normalizedEmail }, { phone }]
             });
             if (existing) {
                 const field = existing.email === email ? 'Email' : 'Phone';
@@ -101,7 +102,7 @@ export class AuthService {
 
             // 3. Entity Creation (Atomic)
             const newUser = queryRunner.manager.create(User, {
-                email,
+                email: normalizedEmail,
                 phone,
                 firstName,
                 lastName,
@@ -163,7 +164,7 @@ export class AuthService {
     async loginWithPassword(email: string, pass: string): Promise<{ accessToken: string; vendor: Omit<User, 'password'> }> {
         // Need to explicitly select password since it has select: false in entity
         const user = await this.userRepository.createQueryBuilder('user')
-            .where('user.email = :email', { email })
+            .where('LOWER(user.email) = LOWER(:email)', { email })
             .addSelect('user.password')
             .getOne();
 

@@ -35,14 +35,14 @@ export class Event {
     // "Vendors can list events they handled" & "User events & bookings" implies bookings.
     // I'll link to Vendor's User ID for simplicity, or VendorProfile. Linking to User ID is standard if auth uses User ID.
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'vendorId' })
     vendor: User;
 
     @Column()
     vendorId: string;
 
-    @ManyToOne(() => User)
+    @ManyToOne(() => User, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'userId' })
     user: User;
 
