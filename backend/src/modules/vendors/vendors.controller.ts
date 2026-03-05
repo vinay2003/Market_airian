@@ -85,26 +85,20 @@ export class VendorsController {
             if (event.status === 'requested') pendingBookings++;
             if (event.status === 'confirmed') activeBookings++;
             if (event.status === 'completed') {
-                // Let's pretend each completed event is ₹50,000 revenue for mockup purposes if no actual pricing is present
-                totalRevenue += 50000;
+                totalRevenue += 0; // Modify this when Event schema gets a price column
             }
         });
 
-        // Mock values for dashboard display if no real data
-        if (totalRevenue === 0 && events.length === 0) {
-            totalRevenue = 12450;
-        }
-
         return {
             totalRevenue,
-            revenueTrend: 12, // Mocked
-            activeBookings: activeBookings > 0 ? activeBookings : 4, // Mixed with mocked if empty
-            pendingBookings: pendingBookings > 0 ? pendingBookings : 2, // Mixed with mocked
-            activePackages: profile?.packages?.length || 3, // Real package count or 3
-            draftPackages: 1, // Mocked
-            profileViews: 1240, // Mocked
-            profileViewsTrend: 8, // Mocked
-            recentBookings: events.length > 0 ? events.slice(0, 3) : null // Real events or null
+            revenueTrend: 0, // Mocked for now since historical comparison needs more logic
+            activeBookings: activeBookings,
+            pendingBookings: pendingBookings,
+            activePackages: profile?.packages?.length || 0,
+            draftPackages: 0, // Modify this if packages have draft status in future
+            profileViews: 0, // To be implemented with analytics
+            profileViewsTrend: 0,
+            recentBookings: events.length > 0 ? events.slice(0, 5) : []
         };
     }
 
