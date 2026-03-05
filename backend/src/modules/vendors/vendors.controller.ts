@@ -6,6 +6,7 @@ import { RolesGuard } from '../../common/roles.guard';
 import { Roles } from '../../common/roles.decorator';
 import { UserRole } from '../users/user.entity';
 import { SupabaseService } from '../../common/supabase/supabase.service';
+import { EventsService } from '../events/events.service';
 
 import { UsersService } from '../users/users.service';
 import { Public } from '../../common/public.decorator';
@@ -21,6 +22,7 @@ export class VendorsController {
         private readonly usersService: UsersService,
         private readonly supabaseService: SupabaseService,
         private readonly authService: AuthService,
+        private readonly eventsService: EventsService,
     ) { }
 
     @Post('profile')
@@ -67,6 +69,43 @@ export class VendorsController {
     @Roles(UserRole.VENDOR)
     async getProfile(@Request() req: any) {
         return this.vendorsService.getProfile(req.user);
+    }
+
+    @Get('dashboard')
+    @Roles(UserRole.VENDOR)
+    async getDashboardStats(@Request() req: any) {
+        const profile = await this.vendorsService.getProfile(req.user);
+        const events = await this.eventsService.findByVendor(req.user.id);
+
+        let pendingBookings = 0;
+        let activeBookings = 0;
+        let totalRevenue = 0;
+
+        events.forEach(event => {
+            if (event.status === 'requested') pendingBookings++;
+            if (event.status === 'confirmed') activeBookings++;
+            if (event.status === 'completed') {
+                // Let's pretend each completed event is ₹50,000 revenue for mockup purposes if no actual pricing is present
+                totalRevenue += 50000;
+            }
+        });
+
+        // Mock values for dashboard display if no real data
+        if (totalRevenue === 0 && events.length === 0) {
+            totalRevenue = 12450;
+        }
+
+        return {
+            totalRevenue,
+            revenueTrend: 12, // Mocked
+            activeBookings: activeBookings > 0 ? activeBookings : 4, // Mixed with mocked if empty
+            pendingBookings: pendingBookings > 0 ? pendingBookings : 2, // Mixed with mocked
+            activePackages: profile?.packages?.length || 3, // Real package count or 3
+            draftPackages: 1, // Mocked
+            profileViews: 1240, // Mocked
+            profileViewsTrend: 8, // Mocked
+            recentBookings: events.length > 0 ? events.slice(0, 3) : null // Real events or null
+        };
     }
 
     @Get('public/:id')

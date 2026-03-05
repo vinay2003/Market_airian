@@ -9,6 +9,7 @@ import { VendorPackage } from './entities/vendor-package.entity';
 import { VendorGallery } from './entities/vendor-gallery.entity';
 import { SavedVendor } from './entities/saved-vendor.entity';
 import { AuthModule } from '../auth/auth.module';
+import { EventsModule } from '../events/events.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { AuthModule } from '../auth/auth.module';
         SupabaseModule,
         UsersModule,
         AuthModule,
+        EventsModule,
     ],
     providers: [VendorsService],
     controllers: [VendorsController],
