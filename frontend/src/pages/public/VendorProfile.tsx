@@ -178,9 +178,36 @@ export default function VendorPublicProfile() {
                                 {vendor.gallery && vendor.gallery.length > 0 ? (
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                         {vendor.gallery.map((item: any) => (
-                                            <div key={item.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer relative">
-                                                <img src={item.url} alt="Gallery Item" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                                            <div key={item.id} className="aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer relative shadow-sm border border-gray-100">
+                                                {item.type === 'video' ? (
+                                                    <video
+                                                        src={item.url}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                        muted
+                                                        loop
+                                                        playsInline
+                                                        onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
+                                                        onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
+                                                    />
+                                                ) : (
+                                                    <img src={item.url} alt="Gallery Item" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                                )}
+
+                                                {/* Overlay - always visible for video icon, hover for bg */}
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none" />
+
+                                                {item.type === 'video' && (
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <div className="bg-black/40 backdrop-blur-sm p-3 rounded-full text-white shadow-lg pointer-events-none group-hover:scale-110 transition-transform">
+                                                            <motion.div
+                                                                animate={{ scale: [1, 1.1, 1] }}
+                                                                transition={{ duration: 2, repeat: Infinity }}
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                                                            </motion.div>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

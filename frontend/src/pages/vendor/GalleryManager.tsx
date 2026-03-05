@@ -100,7 +100,7 @@ export default function GalleryManager() {
                     />
                     <Button disabled={uploading}>
                         {uploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                        {uploading ? "Uploading..." : "Upload Photos"}
+                        {uploading ? "Uploading..." : "Upload Photos & Videos"}
                     </Button>
                 </div>
             </div>
@@ -110,11 +110,19 @@ export default function GalleryManager() {
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {items.map((item) => (
-                        <div key={item.id} className="group relative aspect-square rounded-lg overflow-hidden border bg-muted">
+                        <div key={item.id} className="group relative aspect-square rounded-lg overflow-hidden border bg-muted shadow-sm hover:shadow-md transition-shadow">
                             {item.type === 'video' ? (
-                                <video src={item.url} className="w-full h-full object-cover" />
+                                <video
+                                    src={item.url}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                    loop
+                                    playsInline
+                                    onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
+                                    onMouseOut={(e) => (e.target as HTMLVideoElement).pause()}
+                                />
                             ) : (
-                                <img src={item.url} alt="Gallery" className="w-full h-full object-cover transition-transform hover:scale-105" />
+                                <img src={item.url} alt="Gallery" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                             )}
 
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
@@ -124,7 +132,8 @@ export default function GalleryManager() {
                             </div>
 
                             {item.type === 'video' && (
-                                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+                                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 border border-white/20">
+                                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                                     VIDEO
                                 </div>
                             )}

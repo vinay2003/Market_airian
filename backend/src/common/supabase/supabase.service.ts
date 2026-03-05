@@ -12,8 +12,9 @@ export class SupabaseService {
         const supabaseKey = this.configService.get<string>('SUPABASE_SECRET_KEY');
 
         if (!supabaseUrl || !supabaseKey) {
-            this.logger.error('Missing Supabase credentials in environment variables');
-            throw new Error('Supabase configuration is incomplete');
+            this.logger.error('CRITICAL: Missing Supabase credentials (SUPABASE_URL or SUPABASE_SECRET_KEY) in .env file.');
+            this.logger.warn('Supabase functionality (uploads/gallery) will be disabled until configured.');
+            return;
         }
 
         try {
@@ -26,11 +27,16 @@ export class SupabaseService {
             this.logger.log('Supabase client initialized successfully');
         } catch (error) {
             this.logger.error(`Failed to initialize Supabase client: ${error.message}`);
-            throw error;
+            // Don't re-throw, let the app start
         }
     }
 
     async uploadFile(file: Express.Multer.File, bucket: string, path: string): Promise<string> {
+        if (!this.supabase) {
+            this.logger.error('Upload failed: Supabase client is not initialized. Check your environment variables.');
+            throw new Error('Supabase client not initialized. Please configure SUPABASE_URL.');
+        }
+
         if (!file || !file.buffer) {
             this.logger.error('Attempted to upload an empty file or missing buffer');
             throw new Error('Invalid file object provided for upload');
