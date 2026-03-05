@@ -47,9 +47,6 @@ export class VendorsService {
 
     async getPublicVendors(page: number = 1, limit: number = 20): Promise<{ data: VendorProfile[], total: number }> {
         const [data, total] = await this.vendorRepository.findAndCount({
-            where: {
-                user: { isVerified: true }
-            },
             relations: ['user', 'packages', 'gallery'],
             skip: (page - 1) * limit,
             take: limit,

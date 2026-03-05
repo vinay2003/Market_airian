@@ -92,7 +92,7 @@ export class VendorsController {
         const result = await this.vendorsService.getPublicVendors(pageNumber, limitNumber);
 
         // Prevent listing vendors missing critical info
-        const filteredData = result.data.filter(v => v.businessName && v.city);
+        const filteredData = result.data.filter(v => v.businessName);
 
         return {
             data: filteredData,
