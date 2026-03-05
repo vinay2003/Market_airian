@@ -96,7 +96,8 @@ export default function VendorProfileEditor() {
                 city: formData.address, // mapping address field to city for now
                 address: formData.address,
                 serviceCategories: [formData.category],
-                socialLinks: { website: formData.website }
+                socialLinks: { website: formData.website },
+                logoUrl: finalLogoUrl
             });
 
             updateUser({

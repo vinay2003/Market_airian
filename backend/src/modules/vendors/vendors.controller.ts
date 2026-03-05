@@ -227,7 +227,10 @@ export class VendorsController {
             throw new BadRequestException('File is required');
         }
         const url = await this.supabaseService.uploadFile(file, 'vendor-assets', `logos/${req.user.id}-${Date.now()}`);
-        return this.vendorsService.updateProfile(req.user, { logoUrl: url });
+        let profile = await this.vendorsService.getProfile(req.user);
+        return profile
+            ? this.vendorsService.updateProfile(req.user, { logoUrl: url })
+            : this.vendorsService.createProfile(req.user, { logoUrl: url });
     }
 
     @Post('upload-banner')
@@ -238,7 +241,10 @@ export class VendorsController {
             throw new BadRequestException('File is required');
         }
         const url = await this.supabaseService.uploadFile(file, 'vendor-assets', `banners/${req.user.id}-${Date.now()}`);
-        return this.vendorsService.updateProfile(req.user, { bannerUrl: url });
+        let profile = await this.vendorsService.getProfile(req.user);
+        return profile
+            ? this.vendorsService.updateProfile(req.user, { bannerUrl: url })
+            : this.vendorsService.createProfile(req.user, { bannerUrl: url });
     }
 
     @Post('gallery')
