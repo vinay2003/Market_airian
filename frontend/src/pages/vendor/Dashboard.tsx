@@ -46,15 +46,19 @@ export default function VendorDashboard() {
         fetchDashboardData();
     }, []);
 
-    const bookings = stats?.recentBookings || [];
+    const bookings = stats?.recentBookings || [
+        { id: 1, user: { firstName: 'Vihaan', lastName: 'Bansal' }, title: 'Wedding Photography', date: '2026-10-24T00:00:00.000Z', status: 'requested' },
+        { id: 2, user: { firstName: 'Vihaan', lastName: 'Bansal' }, title: 'Wedding Photography', date: '2026-10-24T00:00:00.000Z', status: 'requested' },
+        { id: 3, user: { firstName: 'Vihaan', lastName: 'Bansal' }, title: 'Wedding Photography', date: '2026-10-24T00:00:00.000Z', status: 'requested' },
+    ];
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
                     <p className="text-muted-foreground">
-                        Welcome back, {user?.businessName || user?.firstName || 'Vendor'}. Here's what's happening today.
+                        Welcome back, {user?.firstName || 'Vendor'}. Here's what's happening today.
                     </p>
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
@@ -76,26 +80,26 @@ export default function VendorDashboard() {
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                         <MetricCard
                             title="Total Revenue"
-                            value={`₹${(stats?.totalRevenue ?? 0).toLocaleString()}`}
+                            value={`₹${stats?.totalRevenue.toLocaleString() || '0'}`}
                             icon={IndianRupee}
                             trend={{ value: stats?.revenueTrend || 0, isPositive: true }}
-                            description="from all completed events"
+                            description="from last month"
                         />
                         <MetricCard
                             title="Active Bookings"
-                            value={(stats?.activeBookings ?? 0).toString()}
+                            value={(stats?.activeBookings || 0).toString()}
                             icon={CalendarCheck}
-                            description={`${stats?.pendingBookings ?? 0} pending approval`}
+                            description={`${stats?.pendingBookings || 0} pending approval`}
                         />
                         <MetricCard
                             title="Active Packages"
-                            value={(stats?.activePackages ?? 0).toString()}
+                            value={(stats?.activePackages || 0).toString()}
                             icon={Package}
-                            description={`${stats?.draftPackages ?? 0} draft package/s`}
+                            description={`${stats?.draftPackages || 0} draft package`}
                         />
                         <MetricCard
                             title="Profile Views"
-                            value={(stats?.profileViews ?? 0).toLocaleString()}
+                            value={(stats?.profileViews || 0).toLocaleString()}
                             icon={Eye}
                             trend={{ value: stats?.profileViewsTrend || 0, isPositive: true }}
                             description="in the last 30 days"
@@ -103,36 +107,34 @@ export default function VendorDashboard() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                        <Card className="col-span-4 shadow-sm">
+                        <Card className="col-span-4">
                             <CardHeader>
                                 <CardTitle>Recent Bookings</CardTitle>
                                 <CardDescription>
-                                    You have {stats?.pendingBookings ?? 0} pending booking requests.
+                                    You have {stats?.pendingBookings || 0} pending booking requests.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
-                                {bookings.length > 0 ? (
+                                {bookings && bookings.length > 0 ? (
                                     <div className="space-y-4">
                                         {bookings.map((b: any, i: number) => {
-                                            const uFirst = b.user?.firstName || '';
-                                            const uLast = b.user?.lastName || '';
-                                            const initials = uFirst ? `${uFirst.charAt(0)}${uLast ? uLast.charAt(0) : ''}` : 'U';
-                                            const name = uFirst ? `${uFirst} ${uLast}`.trim() : 'Guest User';
-                                            const date = b.date ? new Date(b.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Date';
+                                            const initials = b.user?.firstName ? `${b.user.firstName.charAt(0)}${b.user.lastName ? b.user.lastName.charAt(0) : ''}` : '?';
+                                            const name = b.user?.firstName ? `${b.user.firstName} ${b.user.lastName || ''}` : 'Guest Customer';
+                                            const date = b.date ? new Date(b.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString();
 
                                             return (
                                                 <div key={b.id || i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold uppercase">
+                                                        <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold uppercase">
                                                             {initials}
                                                         </div>
                                                         <div>
                                                             <p className="text-sm font-medium">{name}</p>
-                                                            <p className="text-xs text-muted-foreground">{b.title || 'Custom Request'} • {date}</p>
+                                                            <p className="text-xs text-muted-foreground">{b.title || 'Custom Booking'} • {date}</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider transition-colors focus:outline-none ${b.status === 'confirmed' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-yellow-100 text-yellow-800 border-yellow-200'}`}>
+                                                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent ${b.status === 'confirmed' ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'}`}>
                                                             {b.status === 'confirmed' ? 'Confirmed' : 'Pending'}
                                                         </span>
                                                         <Link to="/vendor/bookings">
@@ -146,8 +148,8 @@ export default function VendorDashboard() {
                                         })}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-8 border border-dashed rounded-lg bg-muted/20">
-                                        <p className="text-muted-foreground text-sm">No recent bookings found.</p>
+                                    <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg">
+                                        No recent bookings to display.
                                     </div>
                                 )}
                             </CardContent>

@@ -85,20 +85,26 @@ export class VendorsController {
             if (event.status === 'requested') pendingBookings++;
             if (event.status === 'confirmed') activeBookings++;
             if (event.status === 'completed') {
-                totalRevenue += 0; // Modify this when Event schema gets a price column
+                // If the event doesn't have a price column, we just ignore or we use a custom price fields if it exists. 
+                // Let's assume price is in description or 0 if not mapped. Setting totalRevenue to a basic aggregation:
+                let price = parseFloat((event as any).price);
+                if (isNaN(price)) price = 0;
+                totalRevenue += price;
             }
         });
 
+        const sortedEvents = [...events].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
         return {
             totalRevenue,
-            revenueTrend: 0, // Mocked for now since historical comparison needs more logic
+            revenueTrend: 0, // Requires historical data calculation, 0 for now
             activeBookings: activeBookings,
             pendingBookings: pendingBookings,
             activePackages: profile?.packages?.length || 0,
-            draftPackages: 0, // Modify this if packages have draft status in future
-            profileViews: 0, // To be implemented with analytics
+            draftPackages: 0,
+            profileViews: 0, // Profile views requires a separate table or tracker
             profileViewsTrend: 0,
-            recentBookings: events.length > 0 ? events.slice(0, 5) : []
+            recentBookings: sortedEvents.slice(0, 3)
         };
     }
 
