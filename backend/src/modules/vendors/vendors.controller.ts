@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards, Request, UploadedFile, UploadedFiles, UseInterceptors, Param, NotFoundException, BadRequestException, Delete, Patch } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Request, UploadedFile, UploadedFiles, UseInterceptors, Param, NotFoundException, BadRequestException, Delete, Patch, Query } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { VendorsService } from './vendors.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -81,11 +81,25 @@ export class VendorsController {
 
     @Get('public')
     @Public()
-    async getAllPublicVendors() {
+    async getAllPublicVendors(
+        @Query('page') page: string,
+        @Query('limit') limit: string,
+    ) {
+        const pageNumber = parseInt(page) || 1;
+        const limitNumber = parseInt(limit) || 20;
+
         // Find all verified vendors, optionally with some required profile completeness
-        const vendors = await this.vendorsService.getPublicVendors();
+        const result = await this.vendorsService.getPublicVendors(pageNumber, limitNumber);
+
         // Prevent listing vendors missing critical info
-        return vendors.filter(v => v.businessName && v.city);
+        const filteredData = result.data.filter(v => v.businessName && v.city);
+
+        return {
+            data: filteredData,
+            total: result.total,
+            page: pageNumber,
+            limit: limitNumber
+        };
     }
 
     @Get('packages')

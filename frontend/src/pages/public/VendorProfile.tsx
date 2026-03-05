@@ -51,9 +51,11 @@ export default function VendorPublicProfile() {
                         {vendor.logoUrl ? (
                             <img src={vendor.logoUrl} alt="Logo" className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary text-4xl font-bold">
-                                {vendor.businessName?.[0] || 'V'}
-                            </div>
+                            <img
+                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(vendor.businessName || 'Vendor')}&background=random&size=400`}
+                                alt="Logo Fallback"
+                                className="w-full h-full object-cover"
+                            />
                         )}
                     </motion.div>
 

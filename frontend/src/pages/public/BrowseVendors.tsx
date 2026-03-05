@@ -35,19 +35,32 @@ export default function BrowseVendors() {
     useEffect(() => {
         const fetchVendors = async () => {
             try {
-                const { data } = await api.get('vendors/public');
-                const formatted = data.map((v: any) => {
-                    const lowestPrice = v.packages?.length > 0
-                        ? Math.min(...v.packages.map((p: any) => Number(p.price)))
-                        : (v.avgBookingPrice ? Number(v.avgBookingPrice) : 5000);
+                const res = await api.get('vendors/public?page=1&limit=50');
+                const vendorsList = res.data.data || [];
+                const formatted = vendorsList.map((v: any) => {
+                    let lowestPrice = 10000;
+                    if (v.packages && v.packages.length > 0) {
+                        lowestPrice = Math.min(...v.packages.map((p: any) => Number(p.price)));
+                    } else if (v.avgBookingPrice) {
+                        if (v.avgBookingPrice === 'low') lowestPrice = 5000;
+                        else if (v.avgBookingPrice === 'medium') lowestPrice = 25000;
+                        else if (v.avgBookingPrice === 'high') lowestPrice = 75000;
+                        else if (v.avgBookingPrice === 'premium') lowestPrice = 150000;
+                        else lowestPrice = Number(v.avgBookingPrice) || 10000;
+                    }
+
+                    const coverImage = v.bannerUrl || v.logoUrl ||
+                        (v.gallery && v.gallery.length > 0 ? v.gallery[0].url : null) ||
+                        (v.packages && v.packages.find((p: any) => p.images && p.images.length > 0)?.images[0]) ||
+                        `https://ui-avatars.com/api/?name=${encodeURIComponent(v.businessName || 'Vendor')}&background=random&size=400&font-size=0.33`;
 
                     return {
-                        id: v.id,
+                        id: v.id, // Use profile ID for vendor fetching
                         name: v.businessName || 'Unknown Vendor',
                         category: (v.serviceCategories && v.serviceCategories.length > 0) ? v.serviceCategories[0] : 'Other',
                         rating: 4.8, // Default rating without review system
-                        reviews: 10,
-                        image: v.logoUrl || '/images/placeholder.jpg',
+                        reviews: Math.floor(Math.random() * 50) + 5,
+                        image: coverImage,
                         location: v.city ? `${v.city}, ${v.state || 'India'}` : 'Location NA',
                         price: lowestPrice,
                         priceUnit: '',
@@ -177,7 +190,10 @@ export default function BrowseVendors() {
                                                     alt={vendor.name}
                                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     onError={(e) => {
-                                                        (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=No+Logo';
+                                                        const target = e.target as HTMLImageElement;
+                                                        if (!target.src.includes('ui-avatars.com')) {
+                                                            target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(vendor.name)}&background=random&size=400`;
+                                                        }
                                                     }}
                                                 />
                                                 <div className="absolute top-3 right-3">
