@@ -85,7 +85,7 @@ export default function ResetPassword() {
                 <div className="relative z-10 flex gap-4 text-sm font-medium text-gray-500 flex-col">
                     <span>Vendor Portal access only.</span>
                     <div className="flex gap-4 pointer-events-auto">
-                        <span>© 2026 Market Airian</span>
+                        <span>© 2026 Market Airion</span>
                         <span>•</span>
                         <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
                     </div>

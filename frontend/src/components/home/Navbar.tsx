@@ -27,8 +27,7 @@ export default function Navbar() {
     const toggleMobileMenu = useCallback(() => setMobileMenuOpen((prev) => !prev), []);
 
     const navLinks = [
-        { name: 'Venues', href: '/#venues' },
-        { name: 'Gallery', href: '/gallery' },
+        { name: 'Vendors', href: '/vendors' },
         { name: 'About', href: '/about' },
         { name: 'Legal', href: '/legal' },
     ];

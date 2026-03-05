@@ -45,12 +45,37 @@ export class VendorsService {
         });
     }
 
-    async getPublicVendors(page: number = 1, limit: number = 20): Promise<{ data: VendorProfile[], total: number }> {
-        const [data, total] = await this.vendorRepository.findAndCount({
-            relations: ['user', 'packages', 'gallery'],
-            skip: (page - 1) * limit,
-            take: limit,
-        });
+    async getPublicVendors(
+        page: number = 1,
+        limit: number = 20,
+        filters?: { category?: string; city?: string; query?: string }
+    ): Promise<{ data: VendorProfile[], total: number }> {
+        const queryBuilder = this.vendorRepository.createQueryBuilder('vendor')
+            .leftJoinAndSelect('vendor.user', 'user')
+            .leftJoinAndSelect('vendor.packages', 'packages')
+            .leftJoinAndSelect('vendor.gallery', 'gallery')
+            .where('1=1');
+
+        if (filters?.category) {
+            queryBuilder.andWhere('vendor.serviceCategories LIKE :category', { category: `%${filters.category}%` });
+        }
+
+        if (filters?.city) {
+            queryBuilder.andWhere('LOWER(vendor.city) = LOWER(:city)', { city: filters.city });
+        }
+
+        if (filters?.query) {
+            queryBuilder.andWhere(
+                '(vendor.businessName ILIKE :query OR vendor.description ILIKE :query OR vendor.city ILIKE :query)',
+                { query: `%${filters.query}%` }
+            );
+        }
+
+        const [data, total] = await queryBuilder
+            .skip((page - 1) * limit)
+            .take(limit)
+            .getManyAndCount();
+
         return { data, total };
     }
 

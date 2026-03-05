@@ -10,6 +10,7 @@ import { VendorProfile } from '../vendors/vendor-profile.entity';
 import { JwtStrategy } from './jwt.strategy';
 
 import { SmsModule } from '../sms/sms.module';
+import { MailerService } from './mailer.service';
 
 @Module({
     imports: [
@@ -25,7 +26,7 @@ import { SmsModule } from '../sms/sms.module';
         ConfigModule,
         SmsModule,
     ],
-    providers: [AuthService, JwtStrategy],
+    providers: [AuthService, JwtStrategy, MailerService],
     controllers: [AuthController],
     exports: [AuthService],
 })

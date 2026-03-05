@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import { BRAND } from '@/lib/constants';
 
 const EarlyBird = lazy(() => import('@/components/home/EarlyBird'));
-const Gallery = lazy(() => import('@/components/home/Gallery'));
+
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -370,10 +370,7 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* ── Gallery ──────────────────────────────────────────────── */}
-            <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading Gallery…</div>}>
-                <Gallery />
-            </Suspense>
+
 
             {/* ── Early Bird Offer ─────────────────────────────────────── */}
             <Suspense fallback={<div className="h-96 flex items-center justify-center text-muted-foreground">Loading Offer…</div>}>

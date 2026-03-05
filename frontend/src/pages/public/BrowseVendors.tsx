@@ -29,13 +29,23 @@ export default function BrowseVendors() {
     const [loading, setLoading] = useState(true);
 
     const [searchQuery, setSearchQuery] = useState('');
+    const [cityQuery, setCityQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [priceRange, setPriceRange] = useState([0, 500000]);
 
     useEffect(() => {
         const fetchVendors = async () => {
             try {
-                const res = await api.get('vendors/public?page=1&limit=50');
+                setLoading(true);
+                const params = new URLSearchParams({
+                    page: '1',
+                    limit: '50',
+                    ...(searchQuery && { query: searchQuery }),
+                    ...(selectedCategory && { category: selectedCategory }),
+                    ...(cityQuery && { city: cityQuery })
+                });
+
+                const res = await api.get(`vendors/public?${params.toString()}`);
                 const vendorsList = res.data.data || [];
                 const formatted = vendorsList.map((v: any) => {
                     let lowestPrice = 10000;
@@ -55,10 +65,10 @@ export default function BrowseVendors() {
                         `https://ui-avatars.com/api/?name=${encodeURIComponent(v.businessName || 'Vendor')}&background=random&size=400&font-size=0.33`;
 
                     return {
-                        id: v.id, // Use profile ID for vendor fetching
+                        id: v.id,
                         name: v.businessName || 'Unknown Vendor',
                         category: (v.serviceCategories && v.serviceCategories.length > 0) ? v.serviceCategories[0] : 'Other',
-                        rating: 4.8, // Default rating without review system
+                        rating: 4.8,
                         reviews: Math.floor(Math.random() * 50) + 5,
                         image: coverImage,
                         location: v.city ? `${v.city}, ${v.state || 'India'}` : 'Location NA',
@@ -75,16 +85,15 @@ export default function BrowseVendors() {
             }
         };
 
-        fetchVendors();
-    }, []);
+        const timer = setTimeout(() => {
+            fetchVendors();
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery, selectedCategory, cityQuery]);
 
     const filteredVendors = vendors.filter(vendor => {
-        const matchesSearch = vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            vendor.location.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = selectedCategory ? vendor.category === selectedCategory : true;
-        const matchesPrice = vendor.price >= priceRange[0] && vendor.price <= priceRange[1];
-
-        return matchesSearch && matchesCategory && matchesPrice;
+        return vendor.price >= priceRange[0] && vendor.price <= priceRange[1];
     });
 
     return (
@@ -106,7 +115,12 @@ export default function BrowseVendors() {
                         </div>
                         <div className="relative flex-1 md:flex-none md:w-[240px]">
                             <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
-                            <Input placeholder="City" className="pl-10 h-12 bg-background text-base" />
+                            <Input
+                                placeholder="City"
+                                className="pl-10 h-12 bg-background text-base"
+                                value={cityQuery}
+                                onChange={(e) => setCityQuery(e.target.value)}
+                            />
                         </div>
                         <Button className="h-12 px-8 text-base">Search</Button>
                     </div>

@@ -4,7 +4,7 @@
  */
 export const BRAND = {
     name: 'Airion',
-    fullName: 'Airion Solutions',
+    fullName: 'Market Airion Solutions',
     legal: 'Airion Solutions Pvt. Ltd.',
     tagline: 'Trusted Vendors. Perfect Events.',
     year: 2026,

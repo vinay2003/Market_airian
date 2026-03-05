@@ -7,6 +7,7 @@ import { Otp } from './otp.entity';
 import { VendorProfile, BusinessType } from '../vendors/vendor-profile.entity';
 import { SmsService } from '../sms/sms.service';
 import { RegisterVendorDto } from './dto/register-vendor.dto';
+import { MailerService } from './mailer.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class AuthService {
         private vendorProfileRepository: Repository<VendorProfile>,
         private jwtService: JwtService,
         private smsService: SmsService,
+        private mailerService: MailerService,
         private dataSource: DataSource,
     ) { }
 
@@ -184,24 +186,21 @@ export class AuthService {
     async forgotPassword(email: string): Promise<void> {
         const user = await this.userRepository.findOne({ where: { email } });
         if (!user) {
-            // We usually don't throw an error here to prevent email enumeration
             return;
         }
 
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date();
-        expiresAt.setMinutes(expiresAt.getMinutes() + 15); // 15 mins expiry for pwd reset
+        expiresAt.setMinutes(expiresAt.getMinutes() + 15);
 
-        // Save OTP using phone as an identifier for the OTP table for now, or email if we update the Otp entity.
-        // Assuming Otp entity uses `phone` as a generic identifier string.
         await this.otpRepository.save({
             phone: email,
             code,
             expiresAt,
         });
 
-        // Simulate sending email.
-        console.log(`[Email Simulation] Password reset OTP for ${email} is: ${code}`);
+        // Send real email
+        await this.mailerService.sendPasswordResetEmail(email, code);
     }
 
     async resetPassword(email: string, code: string, newPassword: string): Promise<boolean> {

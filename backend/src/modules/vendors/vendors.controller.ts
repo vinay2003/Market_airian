@@ -123,12 +123,18 @@ export class VendorsController {
     async getAllPublicVendors(
         @Query('page') page: string,
         @Query('limit') limit: string,
+        @Query('query') query: string,
+        @Query('category') category: string,
+        @Query('city') city: string,
     ) {
         const pageNumber = parseInt(page) || 1;
         const limitNumber = parseInt(limit) || 20;
 
-        // Find all verified vendors, optionally with some required profile completeness
-        const result = await this.vendorsService.getPublicVendors(pageNumber, limitNumber);
+        const result = await this.vendorsService.getPublicVendors(pageNumber, limitNumber, {
+            query,
+            category,
+            city
+        });
 
         // Prevent listing vendors missing critical info
         const filteredData = result.data.filter(v => v.businessName);
