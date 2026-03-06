@@ -5,6 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Search, MapPin, Filter, Star, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
@@ -41,7 +48,7 @@ export default function BrowseVendors() {
                     page: '1',
                     limit: '50',
                     ...(searchQuery && { query: searchQuery }),
-                    ...(selectedCategory && { category: selectedCategory }),
+                    ...(selectedCategory && selectedCategory !== 'all' && { category: selectedCategory }),
                     ...(cityQuery && { city: cityQuery })
                 });
 
@@ -71,7 +78,7 @@ export default function BrowseVendors() {
                         rating: 4.8,
                         reviews: Math.floor(Math.random() * 50) + 5,
                         image: coverImage,
-                        location: v.city ? `${v.city}, ${v.state || 'India'}` : 'Location NA',
+                        location: v.city ? `${v.city}, India` : 'India',
                         price: lowestPrice,
                         priceUnit: '',
                         tags: v.serviceCategories || []
@@ -96,33 +103,72 @@ export default function BrowseVendors() {
         return vendor.price >= priceRange[0] && vendor.price <= priceRange[1];
     });
 
+    const clearFilters = () => {
+        setSearchQuery('');
+        setCityQuery('');
+        setSelectedCategory(null);
+        setPriceRange([0, 500000]);
+    };
+
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            {/* Header */}
+            {/* Improved Header Search */}
             <div className="bg-primary/5 pt-28 pb-12 border-b">
                 <div className="container px-4 md:px-6">
-                    <h1 className="text-3xl font-bold tracking-tight mb-4">Find the Perfect Vendor</h1>
+                    <div className="max-w-4xl space-y-4">
+                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 font-heading">
+                            Find the Perfect <span className="text-primary">Vendors</span>
+                        </h1>
+                        <p className="text-muted-foreground text-lg max-w-2xl mb-6">
+                            Search thousands of verified wedding and event professionals by name, category, or location.
+                        </p>
 
-                    <div className="flex flex-col md:flex-row gap-4 max-w-4xl">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by name or location..."
-                                className="pl-10 h-12 bg-background text-base"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+                        <div className="bg-white p-2 md:p-3 rounded-2xl shadow-xl shadow-primary/5 flex flex-col md:flex-row gap-2 border">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search by name, type, or service..."
+                                    className="pl-10 h-12 border-none shadow-none focus-visible:ring-0 text-base"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="md:w-px h-8 bg-gray-200 hidden md:block my-auto" />
+
+                            <div className="relative flex-1 md:w-[200px]">
+                                <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
+                                <Input
+                                    placeholder="Any City"
+                                    className="pl-10 h-12 border-none shadow-none focus-visible:ring-0 text-base"
+                                    value={cityQuery}
+                                    onChange={(e) => setCityQuery(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="md:w-px h-8 bg-gray-200 hidden md:block my-auto" />
+
+                            <div className="relative flex-1 md:w-[200px]">
+                                <Select
+                                    value={selectedCategory || 'all'}
+                                    onValueChange={(val) => setSelectedCategory(val === 'all' ? null : val)}
+                                >
+                                    <SelectTrigger className="h-12 border-none shadow-none focus:ring-0 text-base pl-3">
+                                        <SelectValue placeholder="All Categories" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Categories</SelectItem>
+                                        {CATEGORIES.map(cat => (
+                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <Button className="h-12 px-8 text-base rounded-xl font-semibold shadow-lg shadow-primary/20">
+                                Search
+                            </Button>
                         </div>
-                        <div className="relative flex-1 md:flex-none md:w-[240px]">
-                            <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
-                            <Input
-                                placeholder="City"
-                                className="pl-10 h-12 bg-background text-base"
-                                value={cityQuery}
-                                onChange={(e) => setCityQuery(e.target.value)}
-                            />
-                        </div>
-                        <Button className="h-12 px-8 text-base">Search</Button>
                     </div>
                 </div>
             </div>
@@ -273,11 +319,7 @@ export default function BrowseVendors() {
                                 <p className="text-muted-foreground">Try adjusting your filters or search query.</p>
                                 <Button
                                     variant="link"
-                                    onClick={() => {
-                                        setSearchQuery('');
-                                        setSelectedCategory(null);
-                                        setPriceRange([0, 500000]);
-                                    }}
+                                    onClick={clearFilters}
                                 >
                                     Clear all filters
                                 </Button>

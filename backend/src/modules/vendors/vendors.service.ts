@@ -66,7 +66,7 @@ export class VendorsService {
 
         if (filters?.query) {
             queryBuilder.andWhere(
-                '(vendor.businessName ILIKE :query OR vendor.description ILIKE :query OR vendor.city ILIKE :query)',
+                '(vendor.businessName ILIKE :query OR vendor.description ILIKE :query OR vendor.city ILIKE :query OR vendor.serviceCategories ILIKE :query)',
                 { query: `%${filters.query}%` }
             );
         }
