@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { VendorProfile } from '../vendor-profile.entity';
 
 @Entity('vendor_packages')
@@ -30,6 +31,7 @@ export class VendorPackage {
     @Column({ default: true })
     active: boolean;
 
+    @Exclude()
     @ManyToOne(() => VendorProfile, (vendor) => vendor.packages, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'vendorId' })
     vendor: VendorProfile;
