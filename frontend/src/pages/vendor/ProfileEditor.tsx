@@ -60,7 +60,7 @@ export default function VendorProfileEditor() {
             }
         };
         fetchProfile();
-    }, [user, updateUser]);
+    }, []); // Run once on mount
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
