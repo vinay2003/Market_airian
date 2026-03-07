@@ -15,7 +15,7 @@ const getBaseURL = () => {
 
 export const api = axios.create({
     baseURL: getBaseURL(),
-    timeout: 15000,
+    timeout: 120000, // 2 minutes for larger file uploads
 });
 
 // Attach auth token to every request

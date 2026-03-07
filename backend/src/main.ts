@@ -15,19 +15,35 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
+  // Increase payload limits for image/video uploads
+  const express = require('express');
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
   // setGlobalPrefix MUST be called very early. 
   // We exclude 'health' so we can verify the app is alive even if the prefix logic fails.
   app.setGlobalPrefix('api', { exclude: ['health'] });
 
   // High-priority middleware
-  app.use(helmet());
+  app.use(helmet({
+    crossOriginResourcePolicy: false, // Beneficial for external asset loading
+  }));
+
   app.enableCors({
-    origin: [
-      'https://www.airionsolutions.com',
-      'https://airionsolutions.com',
-      'http://localhost:5173',
-      'http://127.0.0.1:5173'
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'https://www.airionsolutions.com',
+        'https://airionsolutions.com',
+        'https://market-airian.onrender.com', // Common render subdomains
+        'http://localhost:5173',
+        'http://127.0.0.1:5173'
+      ];
+      if (!origin || allowedOrigins.some(o => origin.startsWith(o)) || origin.endsWith('.airionsolutions.com')) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Fallback to allowing all in development if needed, or refine strictly
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

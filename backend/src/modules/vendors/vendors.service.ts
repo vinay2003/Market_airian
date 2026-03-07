@@ -21,8 +21,26 @@ export class VendorsService {
         private savedVendorRepository: Repository<SavedVendor>,
     ) { }
 
-    async createProfile(user: User, data: Partial<VendorProfile>): Promise<VendorProfile> {
-        const profile = this.vendorRepository.create({ ...data, user });
+    async createProfile(user: User, data: any): Promise<VendorProfile> {
+        const existingProfile = await this.getProfile(user);
+
+        // Handle User info updates if passed
+        if (data.firstName || data.lastName) {
+            await this.vendorRepository.manager.update(User, user.id, {
+                ...(data.firstName && { firstName: data.firstName }),
+                ...(data.lastName && { lastName: data.lastName }),
+            });
+        }
+
+        // Filter out User-specific fields that aren't in VendorProfile
+        const { firstName, lastName, email, ...profileData } = data;
+
+        if (existingProfile) {
+            Object.assign(existingProfile, profileData);
+            return this.vendorRepository.save(existingProfile);
+        }
+
+        const profile = this.vendorRepository.create({ ...profileData, user } as any) as unknown as VendorProfile;
         return this.vendorRepository.save(profile);
     }
 
@@ -35,7 +53,9 @@ export class VendorsService {
 
     async updateProfile(user: User, data: Partial<VendorProfile>): Promise<VendorProfile> {
         await this.vendorRepository.update({ user: { id: user.id } }, data);
-        return this.getProfile(user) as Promise<VendorProfile>;
+        const updated = await this.getProfile(user);
+        if (!updated) throw new NotFoundException('Profile not found');
+        return updated;
     }
 
     async getProfileById(id: string): Promise<VendorProfile | null> {

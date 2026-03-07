@@ -69,6 +69,13 @@ export class VendorsController {
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('dashboard')
+    @Roles(UserRole.VENDOR)
+    async getDashboard(@Request() req: any) {
+        return this.getStats(req);
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.USER, UserRole.VENDOR)
     @Get('public/:id')
     async getPublicProfile(@Param('id') id: string) {
