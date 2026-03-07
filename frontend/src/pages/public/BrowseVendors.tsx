@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
+    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
@@ -15,11 +17,37 @@ import { Filter, Star, Heart, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 
-const CITIES = [
-    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Ahmedabad',
-    'Chennai', 'Kolkata', 'Surat', 'Pune', 'Jaipur',
-    'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Thane'
-];
+const INDIAN_LOCATIONS = {
+    "Bihar": [
+        "Bihar (State)", "Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Bihar Sharif", "Purnia", "Darbhanga", "Arrah",
+        "Saharsa", "Begusarai", "Katihar", "Munger", "Chhapra", "Siwan", "Bettiah", "Hajipur", "Sasaram",
+        "Motihari", "Madhubani", "Buxar", "Jehanabad", "Aurangabad", "Lakhisarai", "Nawada", "Jamui",
+        "Madhepura", "Samastipur", "Supaul", "Araria", "Forbesganj", "Dumraon", "Sitamarhi", "Gopalganj",
+        "Khagaria", "Narkatiaganj", "Bagaha", "Ramnagar", "Kishanganj", "Bhabua", "Jamalpur", "Bakhri",
+        "Teghra", "Mokameh", "Masaurhi", "Danapur"
+    ],
+    "Metros": ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Ahmedabad", "Chennai", "Kolkata", "Pune"],
+    "North India": [
+        "Andaman and Nicobar Islands", "Chandigarh", "Delhi", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Ladakh", "Punjab", "Rajasthan", "Uttar Pradesh", "Uttarakhand",
+        "Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Gurugram", "Faridabad", "Panipat", "Ambala", "Shimla", "Mandi", "Dharamshala", "Srinagar", "Jammu", "Leh", "Kargil", "Jaipur", "Jodhpur", "Udaipur", "Kota", "Lucknow", "Kanpur", "Ghaziabad", "Agra", "Varanasi", "Meerut", "Noida", "Prayagraj", "Dehradun", "Haridwar", "Rishikesh"
+    ],
+    "West India": [
+        "Dadra and Nagar Haveli and Daman and Diu", "Goa", "Gujarat", "Maharashtra",
+        "Panaji", "Vasco da Gama", "Margao", "Ahmedabad", "Surat", "Vadodara", "Rajkot", "Gandhinagar", "Bhavnagar", "Jamnagar", "Junagadh", "Mumbai", "Pune", "Nagpur", "Nashik", "Thane", "Aurangabad", "Solapur", "Amravati", "Navi Mumbai"
+    ],
+    "South India": [
+        "Andhra Pradesh", "Karnataka", "Kerala", "Lakshadweep", "Puducherry", "Tamil Nadu", "Telangana",
+        "Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Tirupati", "Bengaluru", "Mysuru", "Hubballi-Dharwad", "Mangaluru", "Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Puducherry", "Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Hyderabad", "Warangal", "Nizamabad"
+    ],
+    "East India": [
+        "Arunachal Pradesh", "Assam", "Jharkhand", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Sikkim", "Tripura", "West Bengal",
+        "Itanagar", "Tawang", "Guwahati", "Dibrugarh", "Silchar", "Dispur", "Ranchi", "Jamshedpur", "Dhanbad", "Bokaro Steel City", "Imphal", "Shillong", "Aizawl", "Kohima", "Dimapur", "Bhubaneswar", "Cuttack", "Rourkela", "Gangtok", "Agartala", "Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri"
+    ],
+    "Central India": [
+        "Chhattisgarh", "Madhya Pradesh",
+        "Raipur", "Bilaspur", "Bhilai", "Indore", "Bhopal", "Jabalpur", "Gwalior", "Ujjain"
+    ]
+};
 
 const CATEGORIES = [
     'Venue', 'Photographer', 'Videographer', 'Catering',
@@ -140,24 +168,29 @@ export default function BrowseVendors() {
                 {/* Search and Quick Filters */}
                 <div className="bg-white p-4 rounded-2xl shadow-md border mb-12 flex flex-col md:flex-row gap-4 items-center">
                     <div className="relative flex-1 w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <Input
-                            placeholder="Search by name, services or keywords..."
-                            className="pl-10 h-12 border-none bg-muted/50 focus-visible:ring-primary transition-all text-lg"
+                            placeholder="Search by name, city, state or village..."
+                            className="pl-12 h-14 border-none bg-muted/50 focus-visible:ring-primary transition-all text-lg rounded-2xl"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <div className="w-full md:w-56">
+                    <div className="w-full md:w-64">
                         <Select value={city} onValueChange={setCity}>
                             <SelectTrigger className="h-12 border-none bg-muted/50 text-base">
                                 <MapPin className="h-4 w-4 mr-2 text-primary" />
-                                <SelectValue placeholder="All Cities" />
+                                <SelectValue placeholder="All India" />
                             </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Cities</SelectItem>
-                                {CITIES.map(c => (
-                                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                            <SelectContent className="max-h-[400px]">
+                                <SelectItem value="all">All India (Cities & States)</SelectItem>
+                                {Object.entries(INDIAN_LOCATIONS).map(([region, locations]) => (
+                                    <SelectGroup key={region}>
+                                        <SelectLabel className="text-primary font-bold px-2 py-1.5 border-b mb-1">{region}</SelectLabel>
+                                        {Array.from(new Set(locations)).sort().map(loc => (
+                                            <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                                        ))}
+                                    </SelectGroup>
                                 ))}
                             </SelectContent>
                         </Select>

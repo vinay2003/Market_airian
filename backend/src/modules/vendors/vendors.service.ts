@@ -81,12 +81,12 @@ export class VendorsService {
         }
 
         if (filters?.city) {
-            queryBuilder.andWhere('LOWER(vendor.city) = LOWER(:city)', { city: filters.city });
+            queryBuilder.andWhere('(LOWER(vendor.city) = LOWER(:city) OR LOWER(vendor.state) = LOWER(:city))', { city: filters.city });
         }
 
         if (filters?.query) {
             queryBuilder.andWhere(
-                '(vendor.businessName ILIKE :query OR vendor.description ILIKE :query OR vendor.city ILIKE :query OR vendor.serviceCategories ILIKE :query)',
+                '(vendor.businessName ILIKE :query OR vendor.description ILIKE :query OR vendor.city ILIKE :query OR vendor.state ILIKE :query OR vendor.serviceCategories ILIKE :query)',
                 { query: `%${filters.query}%` }
             );
         }
