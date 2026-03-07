@@ -132,7 +132,7 @@ export default function VendorProfileEditor() {
         if (!file) return;
 
         const uploadData = new FormData();
-        uploadData.append('file', file);
+        uploadData.append(type, file);
 
         try {
             setLoading(true); // Show global loading or local loading state

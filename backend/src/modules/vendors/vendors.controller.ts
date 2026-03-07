@@ -217,7 +217,7 @@ export class VendorsController {
         const fileName = `logo-${req.user.id}-${Date.now()}`;
         const url = await this.supabaseService.uploadFile(file, 'logos', fileName);
         await this.vendorsService.updateProfile(req.user, { logoUrl: url });
-        return { url };
+        return { logoUrl: url };
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -229,7 +229,7 @@ export class VendorsController {
         const fileName = `banner-${req.user.id}-${Date.now()}`;
         const url = await this.supabaseService.uploadFile(file, 'banners', fileName);
         await this.vendorsService.updateProfile(req.user, { bannerUrl: url });
-        return { url };
+        return { bannerUrl: url };
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)

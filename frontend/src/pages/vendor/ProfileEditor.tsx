@@ -86,7 +86,7 @@ export default function VendorProfileEditor() {
             let finalLogoUrl = logoUrl;
             if (avatarFile) {
                 const formDataFile = new FormData();
-                formDataFile.append('file', avatarFile);
+                formDataFile.append('logo', avatarFile);
                 const { data: uploadData } = await api.post('/vendors/upload-logo', formDataFile);
                 if (uploadData?.logoUrl) {
                     finalLogoUrl = uploadData.logoUrl;
@@ -97,7 +97,7 @@ export default function VendorProfileEditor() {
             let finalBannerUrl = bannerUrl;
             if (bannerFile) {
                 const formDataFile = new FormData();
-                formDataFile.append('file', bannerFile);
+                formDataFile.append('banner', bannerFile);
                 const { data: uploadData } = await api.post('/vendors/upload-banner', formDataFile);
                 if (uploadData?.bannerUrl) {
                     finalBannerUrl = uploadData.bannerUrl;
