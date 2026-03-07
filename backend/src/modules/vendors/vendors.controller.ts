@@ -108,9 +108,10 @@ export class VendorsController {
         };
     }
 
-    @Get('public/:id')
     @Public()
+    @Get('public/:id')
     async getPublicProfile(@Param('id') id: string) {
+        console.log(`[VendorsController] Fetching public profile for ID: ${id}`);
         const profile = await this.vendorsService.getProfileById(id);
         if (!profile) {
             throw new NotFoundException('Vendor profile not found');
@@ -118,8 +119,8 @@ export class VendorsController {
         return profile;
     }
 
-    @Get('public')
     @Public()
+    @Get('public')
     async getAllPublicVendors(
         @Query('page') page: string,
         @Query('limit') limit: string,
