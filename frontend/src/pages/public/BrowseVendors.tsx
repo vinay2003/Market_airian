@@ -3,9 +3,29 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Filter, Star, Heart, MapPin } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Filter, Star, Heart, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
+
+const CITIES = [
+    'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Ahmedabad',
+    'Chennai', 'Kolkata', 'Surat', 'Pune', 'Jaipur',
+    'Lucknow', 'Kanpur', 'Nagpur', 'Indore', 'Thane'
+];
+
+const CATEGORIES = [
+    'Venue', 'Photographer', 'Videographer', 'Catering',
+    'Makeup Artist', 'Decorator', 'Event Planner', 'DJ',
+    'Mehndi Artist', 'Florist', 'Jewellery', 'Invitation'
+];
 
 
 interface VendorType {
@@ -26,15 +46,24 @@ export default function BrowseVendors() {
     const [loading, setLoading] = useState(true);
 
     const [priceRange, setPriceRange] = useState([0, 500000]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [city, setCity] = useState('all');
+    const [category, setCategory] = useState('all');
 
     useEffect(() => {
         const fetchVendors = async () => {
             try {
                 setLoading(true);
-                const params = new URLSearchParams({
+                const queryParams: any = {
                     page: '1',
                     limit: '50'
-                });
+                };
+
+                if (searchQuery) queryParams.query = searchQuery;
+                if (city !== 'all') queryParams.city = city;
+                if (category !== 'all') queryParams.category = category;
+
+                const params = new URLSearchParams(queryParams);
 
                 const res = await api.get(`vendors/public?${params.toString()}`);
                 const vendorsList = res.data.data || [];
@@ -81,7 +110,7 @@ export default function BrowseVendors() {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, []);
+    }, [searchQuery, city, category]);
 
     const filteredVendors = vendors.filter(vendor => {
         return vendor.price >= priceRange[0] && vendor.price <= priceRange[1];
@@ -89,12 +118,15 @@ export default function BrowseVendors() {
 
     const clearFilters = () => {
         setPriceRange([0, 500000]);
+        setSearchQuery('');
+        setCity('all');
+        setCategory('all');
     };
 
     return (
         <div className="min-h-screen bg-transparent flex flex-col">
             <main className="container px-4 md:px-6 pt-24 pb-12 flex-1">
-                <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+                <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
                     <div className="max-w-xl">
                         <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 font-heading">
                             Find the Perfect <span className="text-primary italic">Vendors</span>
@@ -102,6 +134,47 @@ export default function BrowseVendors() {
                         <p className="text-muted-foreground mt-3 text-lg leading-relaxed">
                             Discover top-rated professionals for your special day
                         </p>
+                    </div>
+                </div>
+
+                {/* Search and Quick Filters */}
+                <div className="bg-white p-4 rounded-2xl shadow-md border mb-12 flex flex-col md:flex-row gap-4 items-center">
+                    <div className="relative flex-1 w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input
+                            placeholder="Search by name, services or keywords..."
+                            className="pl-10 h-12 border-none bg-muted/50 focus-visible:ring-primary transition-all text-lg"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <div className="w-full md:w-56">
+                        <Select value={city} onValueChange={setCity}>
+                            <SelectTrigger className="h-12 border-none bg-muted/50 text-base">
+                                <MapPin className="h-4 w-4 mr-2 text-primary" />
+                                <SelectValue placeholder="All Cities" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Cities</SelectItem>
+                                {CITIES.map(c => (
+                                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="w-full md:w-56">
+                        <Select value={category} onValueChange={setCategory}>
+                            <SelectTrigger className="h-12 border-none bg-muted/50 text-base">
+                                <Filter className="h-4 w-4 mr-2 text-primary" />
+                                <SelectValue placeholder="All Categories" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Categories</SelectItem>
+                                {CATEGORIES.map(c => (
+                                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
