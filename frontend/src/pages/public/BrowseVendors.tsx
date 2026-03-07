@@ -7,15 +7,19 @@ import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
-    SelectGroup,
     SelectItem,
-    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Filter, Star, Heart, MapPin, Search } from 'lucide-react';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { Filter, Star, Heart, MapPin, Search, ChevronDown, ChevronRight, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 const INDIAN_LOCATIONS = {
     "Bihar": [
@@ -77,6 +81,8 @@ export default function BrowseVendors() {
     const [searchQuery, setSearchQuery] = useState('');
     const [city, setCity] = useState('all');
     const [category, setCategory] = useState('all');
+    const [expandedRegion, setExpandedRegion] = useState<string | null>('Bihar');
+    const [popoverOpen, setPopoverOpen] = useState(false);
 
     const fetchVendors = async () => {
         try {
@@ -177,23 +183,97 @@ export default function BrowseVendors() {
                         />
                     </div>
                     <div className="w-full md:w-64">
-                        <Select value={city} onValueChange={setCity}>
-                            <SelectTrigger className="h-12 border-none bg-muted/50 text-base">
-                                <MapPin className="h-4 w-4 mr-2 text-primary" />
-                                <SelectValue placeholder="All India" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-[400px]">
-                                <SelectItem value="all">All India (Cities & States)</SelectItem>
-                                {Object.entries(INDIAN_LOCATIONS).map(([region, locations]) => (
-                                    <SelectGroup key={region}>
-                                        <SelectLabel className="text-primary font-bold px-2 py-1.5 border-b mb-1">{region}</SelectLabel>
-                                        {Array.from(new Set(locations)).sort().map(loc => (
-                                            <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-                                        ))}
-                                    </SelectGroup>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-12 border-none bg-muted/50 text-base justify-between px-4 hover:bg-muted/70"
+                                >
+                                    <div className="flex items-center">
+                                        <MapPin className="h-4 w-4 mr-2 text-primary" />
+                                        <span className="truncate">
+                                            {city === 'all' ? 'All India' : city}
+                                        </span>
+                                    </div>
+                                    <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform", popoverOpen && "rotate-180")} />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80 p-0 overflow-hidden rounded-2xl" align="start">
+                                <div className="bg-primary/5 p-3 border-b">
+                                    <p className="text-xs font-bold text-primary uppercase tracking-wider">Select Location</p>
+                                </div>
+                                <div className="max-h-[400px] overflow-y-auto">
+                                    <button
+                                        onClick={() => {
+                                            setCity('all');
+                                            setPopoverOpen(false);
+                                        }}
+                                        className={cn(
+                                            "w-full text-left px-4 py-3 text-sm font-medium hover:bg-muted transition-colors flex items-center justify-between",
+                                            city === 'all' && "text-primary bg-primary/5"
+                                        )}
+                                    >
+                                        <span>All India (Everything)</span>
+                                        {city === 'all' && <Check className="h-4 w-4" />}
+                                    </button>
+
+                                    {Object.entries(INDIAN_LOCATIONS).map(([region, locations]) => {
+                                        const isExpanded = expandedRegion === region;
+                                        const hasSelection = locations.includes(city);
+                                        return (
+                                            <div key={region} className="border-t border-gray-100 first:border-t-0">
+                                                <button
+                                                    onClick={() => setExpandedRegion(isExpanded ? null : region)}
+                                                    className={cn(
+                                                        "w-full flex items-center justify-between px-4 py-3.5 hover:bg-muted/50 transition-all group",
+                                                        isExpanded && "bg-muted/30"
+                                                    )}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={cn(
+                                                            "w-1.5 h-1.5 rounded-full transition-all",
+                                                            hasSelection ? "bg-primary scale-100" : "bg-transparent scale-0"
+                                                        )} />
+                                                        <span className={cn(
+                                                            "font-bold text-sm transition-colors",
+                                                            isExpanded ? "text-primary" : "text-gray-700"
+                                                        )}>
+                                                            {region}
+                                                        </span>
+                                                    </div>
+                                                    {isExpanded ? (
+                                                        <ChevronDown className="h-4 w-4 text-primary animate-in fade-in zoom-in duration-200" />
+                                                    ) : (
+                                                        <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                                    )}
+                                                </button>
+
+                                                {isExpanded && (
+                                                    <div className="bg-muted/20 pb-2 animate-in slide-in-from-top-2 duration-200">
+                                                        {Array.from(new Set(locations)).sort().map(loc => (
+                                                            <button
+                                                                key={loc}
+                                                                onClick={() => {
+                                                                    setCity(loc);
+                                                                    setPopoverOpen(false);
+                                                                }}
+                                                                className={cn(
+                                                                    "w-full text-left px-10 py-2.5 text-sm hover:text-primary transition-all flex items-center justify-between group/item",
+                                                                    city === loc ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:bg-primary/5"
+                                                                )}
+                                                            >
+                                                                <span className="group-hover/item:translate-x-1 transition-transform">{loc}</span>
+                                                                {city === loc && <Check className="h-4 w-4 shrink-0" />}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
                     </div>
                     <div className="w-full md:w-56">
                         <Select value={category} onValueChange={setCategory}>
@@ -354,7 +434,7 @@ export default function BrowseVendors() {
                         )}
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
