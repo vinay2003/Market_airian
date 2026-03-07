@@ -50,61 +50,61 @@ export default function BrowseVendors() {
     const [city, setCity] = useState('all');
     const [category, setCategory] = useState('all');
 
-    useEffect(() => {
-        const fetchVendors = async () => {
-            try {
-                setLoading(true);
-                const queryParams: any = {
-                    page: '1',
-                    limit: '50'
+    const fetchVendors = async () => {
+        try {
+            setLoading(true);
+            const queryParams: any = {
+                page: '1',
+                limit: '50'
+            };
+
+            if (searchQuery) queryParams.query = searchQuery;
+            if (city !== 'all') queryParams.city = city;
+            if (category !== 'all') queryParams.category = category;
+
+            const params = new URLSearchParams(queryParams);
+
+            const res = await api.get(`vendors/public?${params.toString()}`);
+            const vendorsList = res.data.data || [];
+            const formatted = vendorsList.map((v: any) => {
+                let lowestPrice = 10000;
+                if (v.packages && v.packages.length > 0) {
+                    lowestPrice = Math.min(...v.packages.map((p: any) => Number(p.price)));
+                } else if (v.avgBookingPrice) {
+                    if (v.avgBookingPrice === 'low') lowestPrice = 5000;
+                    else if (v.avgBookingPrice === 'medium') lowestPrice = 25000;
+                    else if (v.avgBookingPrice === 'high') lowestPrice = 75000;
+                    else if (v.avgBookingPrice === 'premium') lowestPrice = 150000;
+                    else lowestPrice = Number(v.avgBookingPrice) || 10000;
+                }
+
+                const coverImage = v.bannerUrl || v.logoUrl ||
+                    (v.gallery && v.gallery.length > 0 ? v.gallery[0].url : null) ||
+                    (v.packages && v.packages.find((p: any) => p.images && p.images.length > 0)?.images[0]) ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(v.businessName || 'Vendor')}&background=random&size=400&font-size=0.33`;
+
+                return {
+                    id: v.id,
+                    name: v.businessName || 'Unknown Vendor',
+                    category: (v.serviceCategories && v.serviceCategories.length > 0) ? v.serviceCategories[0] : 'Other',
+                    rating: v.rating || 0,
+                    reviews: v.reviewsCount || 0,
+                    image: coverImage,
+                    location: v.city ? `${v.city}, India` : 'India',
+                    price: lowestPrice,
+                    priceUnit: '',
+                    tags: v.serviceCategories || []
                 };
+            });
+            setVendors(formatted);
+        } catch (err) {
+            console.error("Failed to fetch vendors", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-                if (searchQuery) queryParams.query = searchQuery;
-                if (city !== 'all') queryParams.city = city;
-                if (category !== 'all') queryParams.category = category;
-
-                const params = new URLSearchParams(queryParams);
-
-                const res = await api.get(`vendors/public?${params.toString()}`);
-                const vendorsList = res.data.data || [];
-                const formatted = vendorsList.map((v: any) => {
-                    let lowestPrice = 10000;
-                    if (v.packages && v.packages.length > 0) {
-                        lowestPrice = Math.min(...v.packages.map((p: any) => Number(p.price)));
-                    } else if (v.avgBookingPrice) {
-                        if (v.avgBookingPrice === 'low') lowestPrice = 5000;
-                        else if (v.avgBookingPrice === 'medium') lowestPrice = 25000;
-                        else if (v.avgBookingPrice === 'high') lowestPrice = 75000;
-                        else if (v.avgBookingPrice === 'premium') lowestPrice = 150000;
-                        else lowestPrice = Number(v.avgBookingPrice) || 10000;
-                    }
-
-                    const coverImage = v.bannerUrl || v.logoUrl ||
-                        (v.gallery && v.gallery.length > 0 ? v.gallery[0].url : null) ||
-                        (v.packages && v.packages.find((p: any) => p.images && p.images.length > 0)?.images[0]) ||
-                        `https://ui-avatars.com/api/?name=${encodeURIComponent(v.businessName || 'Vendor')}&background=random&size=400&font-size=0.33`;
-
-                    return {
-                        id: v.id,
-                        name: v.businessName || 'Unknown Vendor',
-                        category: (v.serviceCategories && v.serviceCategories.length > 0) ? v.serviceCategories[0] : 'Other',
-                        rating: v.rating || 0,
-                        reviews: v.reviewsCount || 0,
-                        image: coverImage,
-                        location: v.city ? `${v.city}, India` : 'India',
-                        price: lowestPrice,
-                        priceUnit: '',
-                        tags: v.serviceCategories || []
-                    };
-                });
-                setVendors(formatted);
-            } catch (err) {
-                console.error("Failed to fetch vendors", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
+    useEffect(() => {
         const timer = setTimeout(() => {
             fetchVendors();
         }, 500);
@@ -176,6 +176,12 @@ export default function BrowseVendors() {
                             </SelectContent>
                         </Select>
                     </div>
+                    <Button
+                        onClick={fetchVendors}
+                        className="h-12 px-8 rounded-xl shadow-lg hover:shadow-primary/20 transition-all font-bold text-lg"
+                    >
+                        Search
+                    </Button>
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-8">
