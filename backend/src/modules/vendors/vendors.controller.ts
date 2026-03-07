@@ -68,20 +68,17 @@ export class VendorsController {
         };
     }
 
-    @Public()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.USER, UserRole.VENDOR)
     @Get('public/:id')
     async getPublicProfile(@Param('id') id: string) {
-        console.log(`[DEBUG] getPublicProfile hit for ID: ${id}`);
         try {
             const profile = await this.vendorsService.getProfileById(id);
             if (!profile) {
-                console.log(`[DEBUG] profile NOT FOUND for ID: ${id}`);
                 throw new NotFoundException('Vendor profile not found');
             }
-            console.log(`[DEBUG] profile FOUND: ${profile.businessName}`);
             return profile;
         } catch (err) {
-            console.error(`[DEBUG] Error fetching profile: ${err.message}`);
             throw err;
         }
     }

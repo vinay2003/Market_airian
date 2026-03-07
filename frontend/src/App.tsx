@@ -58,7 +58,6 @@ function App() {
                 <Route path="/legal" element={<Legal />} />
 
                 <Route path="/vendors" element={<BrowseVendors />} />
-                <Route path="/vendor/:id" element={<VendorPublicProfile />} />
               </Route>
 
               {/* Auth Routes */}
@@ -69,6 +68,7 @@ function App() {
 
               {/* Protected Vendor Dashboard */}
               <Route element={<ProtectedRoute />}>
+                <Route path="/vendor/:id" element={<VendorPublicProfile />} />
                 <Route element={<DashboardLayout />}>
                   <Route path="/vendor/dashboard" element={<VendorDashboard />} />
                   <Route path="/vendor/bookings" element={<BookingsManager />} />
