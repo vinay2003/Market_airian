@@ -83,7 +83,7 @@ export default function Hero() {
                                 <div key={i} className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white bg-gray-200" />
                             ))}
                         </div>
-                        <p>Trusted by <span className="font-bold text-gray-900">15,000+</span> planners</p>
+                        <p>Trusted by <span className="font-bold text-gray-900">verified</span> planners</p>
                     </motion.div>
                 </div>
 
@@ -110,8 +110,8 @@ export default function Hero() {
                     >
                         <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 text-xl">✨</div>
                         <div>
-                            <p className="font-heading font-bold text-gray-900">Best Wedding 2024</p>
-                            <p className="text-xs text-gray-500">Awarded to Photography Co.</p>
+                            <p className="font-heading font-bold text-gray-900">Premium Quality</p>
+                            <p className="text-xs text-gray-500">Curated Vendor Excellence</p>
                         </div>
                     </motion.div>
                 </motion.div>

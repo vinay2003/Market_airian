@@ -35,7 +35,7 @@ export default function FeaturedShowcase() {
                                 title: p.name,
                                 vendor: v.businessName || 'Elite Vendor',
                                 price: `₹${Number(p.price).toLocaleString()}`,
-                                rating: 4.8 + (Math.random() * 0.2),
+                                rating: p.rating || v.rating || 0,
                                 location: v.city || 'India',
                                 image: (p.images && p.images.length > 0) ? p.images[0] : (v.bannerUrl || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=2098&auto=format&fit=crop'),
                                 tags: p.features?.slice(0, 3) || v.serviceCategories?.slice(0, 3) || [],

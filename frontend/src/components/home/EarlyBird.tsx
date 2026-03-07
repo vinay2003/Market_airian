@@ -9,9 +9,9 @@ import { useCountdown } from '@/hooks/useCountdown';
  * does NOT reset to "now + 2 days" every time the page reloads.
  * Change this to your actual launch date.
  */
-const LAUNCH_DEADLINE = new Date('2026-03-15T23:59:59');
+const LAUNCH_DEADLINE = new Date('2026-04-15T23:59:59');
 const SLOTS_TOTAL = 500;
-const SLOTS_FILLED = 472;
+const SLOTS_FILLED = 0;
 
 // --- Countdown Timer Component ---
 const CountdownTimer = () => {
@@ -66,10 +66,10 @@ const benefits = [
 ];
 
 const stats = [
-    { value: '500+', label: 'Vendors Joined' },
+    { value: 'Verified', label: 'Vendor Network' },
     { value: '0%', label: 'Commission Fee' },
-    { value: '10x', label: 'Reach Increase' },
-    { value: '24/7', label: 'Support Team' },
+    { value: 'High', label: 'User Engagement' },
+    { value: '24/7', label: 'Priority Support' },
 ];
 
 export default function EarlyBird() {

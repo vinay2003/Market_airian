@@ -66,8 +66,10 @@ export default function VendorPublicProfile() {
                             </Badge>
                             <div className="flex items-center text-yellow-400 text-sm">
                                 <Star fill="currentColor" className="w-4 h-4" />
-                                <span className="ml-1 font-medium text-white">4.9</span>
-                                <span className="ml-1 text-white/80">(24 reviews)</span>
+                                <span className="ml-1 font-medium text-white">{vendor.rating || 'New'}</span>
+                                {vendor.reviewsCount > 0 && (
+                                    <span className="ml-1 text-white/80">({vendor.reviewsCount} reviews)</span>
+                                )}
                             </div>
                         </div>
                         <h1 className="text-3xl md:text-5xl font-heading font-bold flex items-center gap-3">
