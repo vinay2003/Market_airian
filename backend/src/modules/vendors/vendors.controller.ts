@@ -119,12 +119,19 @@ export class VendorsController {
 
         let features = body.features;
         if (typeof features === 'string') {
-            try {
-                const parsed = JSON.parse(features);
-                features = Array.isArray(parsed) ? parsed : features.split(',').map(f => f.trim());
-            } catch (e) {
-                features = features.split(',').map(f => f.trim());
+            const trimmed = features.trim();
+            if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    features = Array.isArray(parsed) ? parsed : [parsed];
+                } catch (e) {
+                    features = trimmed.split(',').map(f => f.trim()).filter(Boolean);
+                }
+            } else {
+                features = trimmed.split(',').map(f => f.trim()).filter(Boolean);
             }
+        } else if (!Array.isArray(features)) {
+            features = [];
         }
 
         return this.vendorsService.addPackage(req.user, {
@@ -149,11 +156,16 @@ export class VendorsController {
             if (Array.isArray(body.existingImages)) {
                 imageUrls = body.existingImages;
             } else if (typeof body.existingImages === 'string') {
-                try {
-                    const parsed = JSON.parse(body.existingImages);
-                    imageUrls = Array.isArray(parsed) ? parsed : body.existingImages.split(',').map(f => f.trim());
-                } catch (e) {
-                    imageUrls = body.existingImages.split(',').map(f => f.trim());
+                const trimmed = body.existingImages.trim();
+                if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+                    try {
+                        const parsed = JSON.parse(trimmed);
+                        imageUrls = Array.isArray(parsed) ? parsed : [parsed];
+                    } catch (e) {
+                        imageUrls = trimmed.split(',').map(f => f.trim()).filter(Boolean);
+                    }
+                } else {
+                    imageUrls = trimmed.split(',').map(f => f.trim()).filter(Boolean);
                 }
             }
         }
@@ -167,12 +179,19 @@ export class VendorsController {
 
         let features = body.features;
         if (typeof features === 'string') {
-            try {
-                const parsed = JSON.parse(features);
-                features = Array.isArray(parsed) ? parsed : features.split(',').map(f => f.trim());
-            } catch (e) {
-                features = features.split(',').map(f => f.trim());
+            const trimmed = features.trim();
+            if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    features = Array.isArray(parsed) ? parsed : [parsed];
+                } catch (e) {
+                    features = trimmed.split(',').map(f => f.trim()).filter(Boolean);
+                }
+            } else {
+                features = trimmed.split(',').map(f => f.trim()).filter(Boolean);
             }
+        } else if (!Array.isArray(features)) {
+            features = [];
         }
 
         return this.vendorsService.updatePackage(req.user, id, {

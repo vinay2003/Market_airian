@@ -131,9 +131,12 @@ export default function PackageManager() {
         setLoading(true);
         const data = new FormData();
         data.append('name', formData.name);
-        data.append('description', formData.description);
+        data.append('description', formData.description.trim());
         data.append('price', formData.price);
-        data.append('features', formData.features);
+
+        // Convert features string to array and stringify for transport
+        const featuresArray = formData.features.split(',').map(f => f.trim()).filter(Boolean);
+        data.append('features', JSON.stringify(featuresArray));
 
         formData.existingImages.forEach(img => {
             data.append('existingImages', img);
