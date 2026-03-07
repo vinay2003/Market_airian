@@ -1,22 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { Search, MapPin, Filter, Star, Heart } from 'lucide-react';
+import { Filter, Star, Heart, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '@/lib/api';
 
-const CATEGORIES = ['Photography', 'Venue', 'Catering', 'Entertainment', 'Decoration', 'Makeup'];
 
 interface VendorType {
     id: string;
@@ -35,9 +25,6 @@ export default function BrowseVendors() {
     const [vendors, setVendors] = useState<VendorType[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [cityQuery, setCityQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [priceRange, setPriceRange] = useState([0, 500000]);
 
     useEffect(() => {
@@ -46,10 +33,7 @@ export default function BrowseVendors() {
                 setLoading(true);
                 const params = new URLSearchParams({
                     page: '1',
-                    limit: '50',
-                    ...(searchQuery && { query: searchQuery }),
-                    ...(selectedCategory && selectedCategory !== 'all' && { category: selectedCategory }),
-                    ...(cityQuery && { city: cityQuery })
+                    limit: '50'
                 });
 
                 const res = await api.get(`vendors/public?${params.toString()}`);
@@ -97,111 +81,40 @@ export default function BrowseVendors() {
         }, 500);
 
         return () => clearTimeout(timer);
-    }, [searchQuery, selectedCategory, cityQuery]);
+    }, []);
 
     const filteredVendors = vendors.filter(vendor => {
         return vendor.price >= priceRange[0] && vendor.price <= priceRange[1];
     });
 
     const clearFilters = () => {
-        setSearchQuery('');
-        setCityQuery('');
-        setSelectedCategory(null);
         setPriceRange([0, 500000]);
     };
 
     return (
-        <div className="min-h-screen bg-background flex flex-col">
-            {/* Improved Header Search */}
-            <div className="bg-primary/5 pt-28 pb-12 border-b">
-                <div className="container px-4 md:px-6">
-                    <div className="max-w-4xl space-y-4">
-                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 font-heading">
-                            Find the Perfect <span className="text-primary">Vendors</span>
+        <div className="min-h-screen bg-transparent flex flex-col">
+            <main className="container px-4 md:px-6 pt-24 pb-12 flex-1">
+                <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+                    <div className="max-w-xl">
+                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 font-heading">
+                            Find the Perfect <span className="text-primary italic">Vendors</span>
                         </h1>
-                        <p className="text-muted-foreground text-lg max-w-2xl mb-6">
-                            Search thousands of verified wedding and event professionals by name, category, or location.
+                        <p className="text-muted-foreground mt-3 text-lg leading-relaxed">
+                            Discover top-rated professionals for your special day
                         </p>
-
-                        <div className="bg-white p-2 md:p-3 rounded-2xl shadow-xl shadow-primary/5 flex flex-col md:flex-row gap-2 border">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search by name, type, or service..."
-                                    className="pl-10 h-12 border-none shadow-none focus-visible:ring-0 text-base"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="md:w-px h-8 bg-gray-200 hidden md:block my-auto" />
-
-                            <div className="relative flex-1 md:w-[200px]">
-                                <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
-                                <Input
-                                    placeholder="Any City"
-                                    className="pl-10 h-12 border-none shadow-none focus-visible:ring-0 text-base"
-                                    value={cityQuery}
-                                    onChange={(e) => setCityQuery(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="md:w-px h-8 bg-gray-200 hidden md:block my-auto" />
-
-                            <div className="relative flex-1 md:w-[200px]">
-                                <Select
-                                    value={selectedCategory || 'all'}
-                                    onValueChange={(val) => setSelectedCategory(val === 'all' ? null : val)}
-                                >
-                                    <SelectTrigger className="h-12 border-none shadow-none focus:ring-0 text-base pl-3">
-                                        <SelectValue placeholder="All Categories" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Categories</SelectItem>
-                                        {CATEGORIES.map(cat => (
-                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <Button className="h-12 px-8 text-base rounded-xl font-semibold shadow-lg shadow-primary/20">
-                                Search
-                            </Button>
-                        </div>
                     </div>
                 </div>
-            </div>
 
-            <main className="container px-4 md:px-6 py-8 flex-1">
                 <div className="flex flex-col md:flex-row gap-8">
                     {/* Filters Sidebar */}
                     <aside className="w-full md:w-64 space-y-8">
                         <div>
-                            <h3 className="font-semibold mb-4 flex items-center gap-2">
+                            <h3 className="font-semibold mb-4 flex items-center gap-2 text-primary">
                                 <Filter className="h-4 w-4" /> Filters
                             </h3>
 
                             <div className="space-y-4">
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">Category</label>
-                                    <div className="space-y-2">
-                                        {CATEGORIES.map(cat => (
-                                            <div key={cat} className="flex items-center space-x-2">
-                                                <Checkbox
-                                                    id={cat}
-                                                    checked={selectedCategory === cat}
-                                                    onCheckedChange={(checked) => setSelectedCategory(checked ? cat : null)}
-                                                />
-                                                <label htmlFor={cat} className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                                    {cat}
-                                                </label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="pt-4 border-t">
+                                <div className="pt-4">
                                     <label className="text-sm font-medium mb-4 block">Price Range</label>
                                     <Slider
                                         defaultValue={[0, 500000]}
@@ -238,7 +151,9 @@ export default function BrowseVendors() {
                         </div>
 
                         {loading ? (
-                            <div className="flex justify-center items-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+                            <div className="flex justify-center items-center py-12">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                            </div>
                         ) : (
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {filteredVendors.map(vendor => (
@@ -311,17 +226,17 @@ export default function BrowseVendors() {
                         )}
 
                         {!loading && filteredVendors.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <div className="bg-muted p-4 rounded-full mb-4">
-                                    <Search className="h-8 w-8 text-muted-foreground" />
-                                </div>
-                                <h3 className="text-lg font-semibold">No vendors found</h3>
-                                <p className="text-muted-foreground">Try adjusting your filters or search query.</p>
+                            <div className="flex flex-col items-center justify-center py-16 text-center">
+                                <h3 className="text-xl font-bold text-gray-900">No vendors matching your price</h3>
+                                <p className="text-muted-foreground mt-2 max-w-sm">
+                                    Try expanding your price range to see more professionals in your area.
+                                </p>
                                 <Button
-                                    variant="link"
+                                    variant="outline"
+                                    className="mt-6 rounded-full px-8"
                                     onClick={clearFilters}
                                 >
-                                    Clear all filters
+                                    Clear Price Filter
                                 </Button>
                             </div>
                         )}

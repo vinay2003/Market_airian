@@ -11,15 +11,20 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     private isPublicRoute = false;
 
-    canActivate(context: ExecutionContext) {
+    async canActivate(context: ExecutionContext) {
         this.isPublicRoute = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
             context.getHandler(),
             context.getClass(),
         ]);
 
-        // Always call super.canActivate to try and populate the user
-        // even for public routes. We'll handle the optionality in handleRequest.
-        return super.canActivate(context);
+        try {
+            const result = await (super.canActivate(context) as Promise<boolean>);
+            if (this.isPublicRoute) return true;
+            return result;
+        } catch (err) {
+            if (this.isPublicRoute) return true;
+            throw err;
+        }
     }
 
     handleRequest(err: any, user: any, info: any) {
