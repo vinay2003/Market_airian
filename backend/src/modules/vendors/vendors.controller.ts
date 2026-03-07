@@ -117,10 +117,20 @@ export class VendorsController {
             }
         }
 
+        let features = body.features;
+        if (typeof features === 'string') {
+            try {
+                const parsed = JSON.parse(features);
+                features = Array.isArray(parsed) ? parsed : features.split(',').map(f => f.trim());
+            } catch (e) {
+                features = features.split(',').map(f => f.trim());
+            }
+        }
+
         return this.vendorsService.addPackage(req.user, {
             ...body,
             images: imageUrls,
-            features: typeof body.features === 'string' ? JSON.parse(body.features) : body.features
+            features
         });
     }
 
@@ -134,7 +144,19 @@ export class VendorsController {
         @Body() body: any,
         @UploadedFiles() files: Express.Multer.File[]
     ) {
-        const imageUrls = body.existingImages ? (typeof body.existingImages === 'string' ? JSON.parse(body.existingImages) : body.existingImages) : [];
+        let imageUrls: string[] = [];
+        if (body.existingImages) {
+            if (Array.isArray(body.existingImages)) {
+                imageUrls = body.existingImages;
+            } else if (typeof body.existingImages === 'string') {
+                try {
+                    const parsed = JSON.parse(body.existingImages);
+                    imageUrls = Array.isArray(parsed) ? parsed : body.existingImages.split(',').map(f => f.trim());
+                } catch (e) {
+                    imageUrls = body.existingImages.split(',').map(f => f.trim());
+                }
+            }
+        }
         if (files && files.length > 0) {
             for (const file of files) {
                 const fileName = `${Date.now()}-${file.originalname}`;
@@ -143,10 +165,20 @@ export class VendorsController {
             }
         }
 
+        let features = body.features;
+        if (typeof features === 'string') {
+            try {
+                const parsed = JSON.parse(features);
+                features = Array.isArray(parsed) ? parsed : features.split(',').map(f => f.trim());
+            } catch (e) {
+                features = features.split(',').map(f => f.trim());
+            }
+        }
+
         return this.vendorsService.updatePackage(req.user, id, {
             ...body,
             images: imageUrls,
-            features: typeof body.features === 'string' ? JSON.parse(body.features) : body.features
+            features
         });
     }
 
